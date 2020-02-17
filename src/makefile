@@ -300,6 +300,9 @@ dict-benchmark: dict.c zmalloc.c sds.c siphash.c
 %.o: %.c .make-prerequisites
 	$(REDIS_CC) -c $<
 
+rocksdb:
+	cd ../deps/rocksdb && $(MAKE) static_lib
+
 clean:
 	#rm .make-settings
 	rm -rf $(REDIS_SERVER_NAME) $(REDIS_SENTINEL_NAME) $(REDIS_CLI_NAME) $(REDIS_BENCHMARK_NAME) $(REDIS_CHECK_RDB_NAME) $(REDIS_CHECK_AOF_NAME) *.o *.gcda *.gcno *.gcov redis.info lcov-html Makefile.dep dict-benchmark
