@@ -1,2 +1,0 @@
-rock:
-	gcc -std=c++11 -c -o rocksdbapi.o rocksdbapi.cpp -I ../deps/rocksdb/include
