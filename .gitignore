@@ -29,3 +29,7 @@ deps/lua/src/liblua.a
 *.dSYM
 Makefile.dep
 .vscode/*
+metric/metric.iml
+metric/target
+metric/.idea
+
