@@ -11,7 +11,10 @@ extern "C" void rocksdbapi_init(int dbnum, char *root_path);
 extern "C" void rocksdbapi_teardown();
 extern "C" void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val_len);
 extern "C" void rocksdbapi_write(int dbi, char *key, size_t key_len, char *val, size_t val_len);
-extern "C" size_t rocksdbapi_memory();
+extern "C" size_t rocksdbapi_memory(void);
+extern "C" void rocksdbapi_createSnapshots(void);
+extern "C" void rocksdbapi_relaseSnapshots(void);
+extern "C" void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **val, size_t *val_len);
 
 #define ROCKDB_WRITE_BUFFER_SIZE    16
 #define ROCKDB_BLOCK_CACHE_SIZE    0
@@ -19,10 +22,35 @@ extern "C" size_t rocksdbapi_memory();
 #define MAX_WRITE_BUFFER_NUMBER 1
 
 std::vector<rocksdb::DB*> rocksdb_all_dbs;
+std::vector<const rocksdb::Snapshot*> rocksdb_all_snapshots;
 std::string rocksdb_root_path;
 
+void rocksdbapi_createSnapshots(void) {    
+    for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
+        rocksdb::DB* db = rocksdb_all_dbs[i];
+        rocksdb::Snapshot const *saved = rocksdb_all_snapshots[i];
 
-size_t rocksdbapi_memory() {    
+        assert(saved == NULL);
+        if (db) {
+            rocksdb::Snapshot const *snapshot = db->GetSnapshot();
+            rocksdb_all_snapshots[i] = snapshot;
+        }
+    }
+}
+
+void releaseAllSnapshots(void) {
+    for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
+        rocksdb::DB *db = rocksdb_all_dbs[i];
+        if (db) {
+            rocksdb::Snapshot const *snapshot = db->GetSnapshot();
+            if (snapshot) 
+                db->ReleaseSnapshot(snapshot);
+        }
+        rocksdb_all_snapshots[i] = NULL; 
+    }
+}
+
+size_t rocksdbapi_memory(void) {    
     return (ROCKDB_WRITE_BUFFER_SIZE + ROCKDB_BLOCK_CACHE_SIZE) << 20;
 }
 
@@ -89,6 +117,7 @@ void rocksdbapi_init(int dbnum, char *root_path) {
 
     for (int i = 0; i < dbnum; ++i) {
         rocksdb_all_dbs.push_back(NULL);
+        rocksdb_all_snapshots.push_back(NULL);
     }
 
     open_if_not_exist(0);
@@ -110,6 +139,34 @@ void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val
     std::string rock_val;
     rocksdb::Slice rock_key((char*)key, key_len);
     rocksdb::Status s = db->Get(rocksdb::ReadOptions(), rock_key, &rock_val);
+
+    if (s.IsNotFound()) {
+        *val = NULL;
+        return;
+    }
+
+    assert(s.ok());
+
+    void* new_heap_memory = zmalloc(rock_val.size());
+    memcpy(new_heap_memory, rock_val.data(), rock_val.size());
+    *val = new_heap_memory;
+    *val_len = rock_val.size();
+}
+
+void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **val, size_t *val_len) {
+    assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
+    assert(key && key_len && val && val_len);
+
+    rocksdb::DB *db = rocksdb_all_dbs[dbi];
+    assert(db);
+    rocksdb::Snapshot const *snapshot = rocksdb_all_snapshots[dbi];
+    assert(snapshot);
+
+    std::string rock_val;
+    rocksdb::Slice rock_key((char*)key, key_len);
+    rocksdb::ReadOptions option = rocksdb::ReadOptions();
+    option.snapshot = snapshot;
+    rocksdb::Status s = db->Get(option, rock_key, &rock_val);
 
     if (s.IsNotFound()) {
         *val = NULL;

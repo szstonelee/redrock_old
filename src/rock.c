@@ -1,3 +1,4 @@
+
 #include "rock.h"
 #include "rockserdes.h"
 #include "rocksdbapi.h"
@@ -540,6 +541,7 @@ int _haveRockJobThenDoJobInRockThread() {
     }
 }
 
+/* this is the rock thread entrance, working together with the main thread */
 void *_mainProcessInRockThread(void *arg) {
     UNUSED(arg);
     int sleepMicro = 1;
@@ -557,6 +559,10 @@ void *_mainProcessInRockThread(void *arg) {
     return NULL;
 }
 
+
+/* the function create a thread, which will read data from Rocksdb other than the main thread 
+ * main thread and rock thread will be synchronized by a spinning lock,
+ * and signal (wakeup) the rock thread by the pipe, server.rock_pipe */
 void initRockPipe() {
     pthread_t rockdb_thread;
     int pipefds[2];

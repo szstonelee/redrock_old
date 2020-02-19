@@ -22,6 +22,7 @@
 #define ROCK_TYPE_HASH_ZIPLIST  13
 #define ROCK_TYPE_LIST_QUICKLIST 14
 
+
 /* API */
 void rock_print_debug();
 void rock_debug_print_key_report();
