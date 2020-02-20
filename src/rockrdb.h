@@ -9,6 +9,7 @@ typedef struct RockRdbParams {
     pthread_mutex_t mutex;
 } RockRdbParams;  
 
+void _test_rdb_service();
 
 #endif
 

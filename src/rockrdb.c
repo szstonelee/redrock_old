@@ -57,16 +57,22 @@ void _closeRockRdbParamsPipes(RockRdbParams *params) {
  * when main thread fork the rdb child process, it needs to call this func 
  * to wake up the rdb service thread to service for the rdb child process */
 void wakeupRdbServiceThreadAfterForkInMainThread(RockRdbParams *params) {
-    pthread_mutex_unlock(&params->mutex);
+    if (pthread_mutex_unlock(&params->mutex) != 0) {
+        serverLog(LL_WARNING, "wakeupRdbServiceThreadAfterForkInMainThread() failed!");
+    }
 }
 
 /* service thread for rdb process to request value in the snapshot */
 void *_serviceForRdbChildProcessInServiceThread(void *arg) {
+    serverLog(LL_NOTICE, "rdb service new born here! rdb service thread id = %d", (int)pthread_self());
+
     RockRdbParams *params = arg;
 
     // waiting for main thread unlock the mutex(after fork()) to wake up and start working
     pthread_mutex_lock(&params->mutex);   
     pthread_mutex_unlock(&params->mutex); 
+
+    serverLog(LL_NOTICE, "rdb service wake up! rdb service thread id = %d", (int)pthread_self());
 
     close(params->pipe_request[1]);     // do not need write-end of request
     close(params->pipe_response[0]);    // do not need read-end of response
@@ -111,6 +117,11 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
         // read rocksdb snapshot
         size_t val_len;
         rocksdbapi_read_from_snapshot(dbi, key, key_len, &db_val, &val_len);
+        if (db_val == NULL) {
+            // not found
+            serverLog(LL_WARNING, "rdb service thread: call rocksdbapi(snapshot), return NOT_FOUND!");
+            goto err;
+        }
 
         // response
         ret = _write_pipe_by_length(params->pipe_response[1], (char*)&val_len, sizeof(size_t));
@@ -133,13 +144,19 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
 
     serverAssert(key == NULL && db_val == NULL);
     _closeRockRdbParamsPipes(params);
-    return NULL;    // thread exit
+    serverLog(LL_NOTICE, "rdb service exit successfully! rdb service thread id = %d", (int)pthread_self());
+    zfree(arg);
+    rocksdbapi_releaseAllSnapshots();
+    return NULL;    // thread exit with success
 
 err:
     if (key) sdsfree(key);
     if (db_val) zfree(db_val);
     _closeRockRdbParamsPipes(params);
-    return NULL;
+    serverLog(LL_NOTICE, "rdb service exit with error! rdb service thread id = %d", (int)pthread_self());
+    zfree(arg);
+    rocksdbapi_releaseAllSnapshots();
+    return NULL;    // thread exit with error
 }
 
 /* when a child rdb process start, call this func for initialization */
@@ -185,7 +202,8 @@ sds requestSnapshotValByKeyInRdbProcess(int dbi, sds key, RockRdbParams *params)
     return val;
 }
 
-/* create a service thread for rdb process's requests for snapshot read in rocksdb */
+/* create a service thread for rdb process's requests for snapshot read in rocksdb 
+ * return 1 if success. -1 if error */
 int initRockSerivceForRdbInMainThread(RockRdbParams *params) {
     pthread_t service_for_rdb;
 
@@ -195,13 +213,16 @@ int initRockSerivceForRdbInMainThread(RockRdbParams *params) {
     }
 
     if (pthread_mutex_init(&params->mutex, NULL) != 0) {
-        serverLog(LL_WARNING, "creating service thread for rdb failed!");
+        serverLog(LL_WARNING, "creating service thread for rdb failed, init mutex!");
         _closeRockRdbParamsPipes(params);
         return -1;
     }
 
-    // lock the mutex to let the following rdb service thread sleep
-    pthread_mutex_lock(&params->mutex);  
+    // lock the mutex to let the following newborn rdb service thread sleep
+    if (pthread_mutex_lock(&params->mutex) != 0) {
+        serverLog(LL_WARNING, "main thread lock the mutex failed!");
+        return -1;
+    }  
 
     if (pthread_create(&service_for_rdb, NULL, 
         _serviceForRdbChildProcessInServiceThread, params) != 0) {
@@ -212,5 +233,57 @@ int initRockSerivceForRdbInMainThread(RockRdbParams *params) {
 
     rocksdbapi_createSnapshots();
     
-    return 0;    
+    return 1;    
+}
+
+void _test_rdb_service() {
+    serverLog(LL_NOTICE, "redis main process id = %d", (int)getpid());
+
+    char test_key[] = "abc";
+    char test_val[] = "This is a test for key abc, really???...";
+    rocksdbapi_write(0, test_key, sizeof(test_key)-1, test_val, sizeof(test_val)-1);
+    serverLog(LL_NOTICE, "main thread init write key");
+
+    RockRdbParams *params = zmalloc(sizeof(RockRdbParams));
+
+    int ret;
+
+    ret = initRockSerivceForRdbInMainThread(params);
+
+    if (ret != 1) {
+        serverLog(LL_NOTICE, "fail init rdb srvice thread");
+        zfree(params);
+        return;
+    } 
+    
+    serverLog(LL_NOTICE, "success init rdb srvice thread, main thread id = %d", (int)pthread_self());
+
+    ret = fork();
+    if (ret == -1) {
+        serverLog(LL_NOTICE, "fork failed!");
+        zfree(params);
+        return ;
+    }
+
+    if (ret == 0) {
+        // child process
+        serverLog(LL_NOTICE, "rdb child process start, pid = %d", (int)getpid());
+        initForRockInRdbProcess(params);
+        serverLog(LL_NOTICE, "rdb child process init, pid = %d", (int)getpid());
+        sds key = sdsnew("abc");
+        serverLog(LL_NOTICE, "start to find key %s in child process, pid = %d", key, (int)getpid());
+        sds val = requestSnapshotValByKeyInRdbProcess(0, key, params);
+        if (val == NULL) 
+            serverLog(LL_NOTICE, "get NULL val in child rdb proces, pid = %d", (int)getpid());
+        else
+            serverLog(LL_NOTICE, "get val in child rdb proces, pid = %d, val = %s", (int)getpid(), val);        
+        serverLog(LL_NOTICE, "rdb child process clear before exit, pid = %d", (int)getpid());
+        clearForRockWhenExitInRdbProcess(params);
+        serverLog(LL_NOTICE, "rdb child process clear exit, pid = %d", (int)getpid());
+        _exit(0);
+    } else {
+        // parent process
+        wakeupRdbServiceThreadAfterForkInMainThread(params);
+        // params will be freed in rdb service thread when exit
+    }
 }

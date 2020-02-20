@@ -13,7 +13,7 @@ extern "C" void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, 
 extern "C" void rocksdbapi_write(int dbi, char *key, size_t key_len, char *val, size_t val_len);
 extern "C" size_t rocksdbapi_memory(void);
 extern "C" void rocksdbapi_createSnapshots(void);
-extern "C" void rocksdbapi_relaseSnapshots(void);
+extern "C" void rocksdbapi_releaseAllSnapshots(void);
 extern "C" void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **val, size_t *val_len);
 
 #define ROCKDB_WRITE_BUFFER_SIZE    16
@@ -38,7 +38,7 @@ void rocksdbapi_createSnapshots(void) {
     }
 }
 
-void releaseAllSnapshots(void) {
+void rocksdbapi_releaseAllSnapshots(void) {
     for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
         rocksdb::DB *db = rocksdb_all_dbs[i];
         if (db) {
@@ -129,6 +129,7 @@ void rocksdbapi_teardown() {
     }
 }
 
+/* if not found, val is NULL */
 void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);
@@ -153,6 +154,7 @@ void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val
     *val_len = rock_val.size();
 }
 
+/* if not found, val is NULL */
 void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **val, size_t *val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);

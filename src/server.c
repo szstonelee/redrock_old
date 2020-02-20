@@ -35,6 +35,7 @@
 #include "atomicvar.h"
 #include "rock.h"
 #include "rockserdes.h"
+#include "rockrdb.h"
 
 #include <time.h>
 #include <signal.h>
@@ -2281,7 +2282,8 @@ void createSharedObjects(void) {
     /* shared object which indicating the value in rocksdb */
     shared.valueInRock = createObject(OBJ_STRING, NULL);
     shared.valueInRock->encoding = OBJ_ENCODING_INT;
-    shared.valueInRock->ptr = (void *)0;    // fingerprint start from zero
+    // if the specific value appears in Rocksdb, it means we are a fool. 250 means FOOL in Chinese context.
+    shared.valueInRock->ptr = (void *)250;          
     makeObjectShared(shared.valueInRock);
 }
 
@@ -3775,6 +3777,8 @@ void echoCommand(client *c) {
     } else if (strcmp(echoStr, "rockmem") == 0) {
         size_t mem_usage = getMemoryOfRock();
         serverLog(LL_NOTICE, "rock mem usage = %lu", mem_usage);
+    } else if (strcmp(echoStr, "testrdbservice") == 0) {
+        _test_rdb_service();
     }
 
     addReplyBulk(c,c->argv[1]);
