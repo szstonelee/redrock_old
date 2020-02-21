@@ -376,13 +376,14 @@ def _test_zset():
 
 
 if __name__ == '__main__':
+    #_inc_maxmemory_with_str()
+    _check_all_key_in_str()
+
     #_test()
     #_leak()
-    _inc_maxmemory_with_str()
     #_dec_memory()
     #_del_all_keys()
     #_test_replica()
-    #_check_all_key_in_str()
     #_test_ser_des_string()
     #_test_ser_des_list()
     #_inc_maxmemory_with_list()

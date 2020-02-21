@@ -52,4 +52,6 @@ void cmdCheckRockExcludeLastArg(client *c, struct redisCommand *cmd, robj **argv
 void cmdCheckRockForAllKeys(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
 void cmdCheckRockExcludeFirstArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
 
+int isRockFeatureEnabled();
+
 #endif

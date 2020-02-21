@@ -64,7 +64,7 @@ void wakeupRdbServiceThreadAfterForkInMainThread(RockRdbParams *params) {
 
 /* service thread for rdb process to request value in the snapshot */
 void *_serviceForRdbChildProcessInServiceThread(void *arg) {
-    serverLog(LL_NOTICE, "rdb service new born here! rdb service thread id = %d", (int)pthread_self());
+    // serverLog(LL_NOTICE, "rdb service new born here! rdb service thread id = %d", (int)pthread_self());
 
     RockRdbParams *params = arg;
 
@@ -72,7 +72,7 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
     pthread_mutex_lock(&params->mutex);   
     pthread_mutex_unlock(&params->mutex); 
 
-    serverLog(LL_NOTICE, "rdb service wake up! rdb service thread id = %d", (int)pthread_self());
+    // serverLog(LL_NOTICE, "rdb service wake up! rdb service thread id = %d", (int)pthread_self());
 
     close(params->pipe_request[1]);     // do not need write-end of request
     close(params->pipe_response[0]);    // do not need read-end of response
@@ -145,7 +145,8 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
     serverAssert(key == NULL && db_val == NULL);
     _closeRockRdbParamsPipes(params);
     serverLog(LL_NOTICE, "rdb service exit successfully! rdb service thread id = %d", (int)pthread_self());
-    zfree(arg);
+    *(params->myself) = NULL;
+    zfree(params);
     rocksdbapi_releaseAllSnapshots();
     return NULL;    // thread exit with success
 
@@ -154,7 +155,8 @@ err:
     if (db_val) zfree(db_val);
     _closeRockRdbParamsPipes(params);
     serverLog(LL_NOTICE, "rdb service exit with error! rdb service thread id = %d", (int)pthread_self());
-    zfree(arg);
+    *(params->myself) = NULL;
+    zfree(params);
     rocksdbapi_releaseAllSnapshots();
     return NULL;    // thread exit with error
 }

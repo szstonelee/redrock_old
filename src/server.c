@@ -1122,6 +1122,8 @@ mstime_t mstime(void) {
  * the parent process. However if we are testing the coverage normal exit() is
  * used in order to obtain the right coverage information. */
 void exitFromChild(int retcode) {
+    if (server.rockRdbParams) 
+        clearForRockWhenExitInRdbProcess(server.rockRdbParams);
 #ifdef COVERAGE_TEST
     exit(retcode);
 #else
@@ -2901,6 +2903,8 @@ void initServer(void) {
 
     initRockPipe();     /* init rock pipe and start the rock thread */
     initZeroRockJob();
+    server.rockRdbParams = NULL;
+    server.inSubChildProcessState = 0;  // for Main thread(&process) always False
 }
 
 /* Some steps in server initialization need to be done last (after modules
@@ -4744,10 +4748,26 @@ void setupChildSignalHandlers(void) {
 }
 
 int redisFork() {
+    if (isRockFeatureEnabled()) {
+        serverAssert(server.rockRdbParams == NULL);
+        server.rockRdbParams = zmalloc(sizeof(RockRdbParams));
+        server.rockRdbParams->myself = &server.rockRdbParams;
+        if (initRockSerivceForRdbInMainThread(server.rockRdbParams) != 1) {
+            serverLog(LL_WARNING, "fail init rdb srvice thread");
+            zfree(server.rockRdbParams);
+            server.rockRdbParams = NULL;
+            return -1;
+        }
+    }    
+
     int childpid;
     long long start = ustime();
     if ((childpid = fork()) == 0) {
         /* Child */
+        server.inSubChildProcessState = 1;
+        if (server.rockRdbParams)
+            initForRockInRdbProcess(server.rockRdbParams);
+
         closeListeningSockets(0);
         setupChildSignalHandlers();
     } else {
@@ -4756,9 +4776,18 @@ int redisFork() {
         server.stat_fork_rate = (double) zmalloc_used_memory() * 1000000 / server.stat_fork_time / (1024*1024*1024); /* GB per second. */
         latencyAddSampleIfNeeded("fork",server.stat_fork_time/1000);
         if (childpid == -1) {
+            if (isRockFeatureEnabled()) {
+                zfree(server.rockRdbParams);
+                server.rockRdbParams = NULL;
+            }
             return -1;
         }
         updateDictResizePolicy();
+
+        if (server.rockRdbParams)
+            wakeupRdbServiceThreadAfterForkInMainThread(server.rockRdbParams);
+            // NOTE: params will be freed in rdb service thread when exit 
+            // and server.rockRdbParams will be set NULL at that time
     }
     return childpid;
 }
@@ -5112,13 +5141,21 @@ int main(int argc, char **argv) {
         serverLog(LL_WARNING,"WARNING: You specified a maxmemory value that is less than 1MB (current value is %llu bytes). Are you sure this is what you really want?", server.maxmemory);
     }
 
-    int init_rockdb_ret = init_rocksdb(server.dbnum, server.rockdb_dir);
-    if (init_rockdb_ret == -1) exit(1);
+    if (isRockFeatureEnabled()) {
+        if (init_rocksdb(server.dbnum, server.rockdb_dir) == -1) {
+            serverLog(LL_WARNING, "init rocksdb failed!");
+            exit(1);
+        }
+    }
+
     aeSetBeforeSleepProc(server.el,beforeSleep);
     aeSetAfterSleepProc(server.el,afterSleep);
     aeMain(server.el);
     aeDeleteEventLoop(server.el);
-    teardown_rocksdb();
+
+    if (isRockFeatureEnabled())
+        teardown_rocksdb();
+
     return 0;
 }
 

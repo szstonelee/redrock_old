@@ -21,6 +21,16 @@
 #define SAFE_MEMORY_ROCK_BEFORE_EVIC    (32<<20) 
 #define MAX_TRY_PICK_KEY_TIMES 64
 
+/* check whether the config is enabled 
+ * NOTE: we set these config parameter is mutable, but actually it can not be changed online 
+ * return 1 if enabled, otherwise 0*/
+int isRockFeatureEnabled() {
+    if (server.enable_rocksdb_feature && server.maxmemory > 0) 
+        return 1;
+    else
+        return 0;
+}
+
 /* a lot of commands only use one key, we use one common function for all */
 void cmdCheckRockForOneKey(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {
     UNUSED(cmd);
@@ -130,9 +140,10 @@ void rock_test_write_rockdb(char *val) {
     rocksdbapi_write(0, key, strlen(key), val, strlen(val));
 }
 
-/* no need to init, return 0, error return -1, 1 init ok */
+/* error return -1, 1 init ok */
 int init_rocksdb(int dbnum, char *path) {
-    if (!server.enable_rocksdb_feature) return 0;
+    // if (!server.enable_rocksdb_feature) return 0;
+    serverAssert(isRockFeatureEnabled());
 
     if (!server.maxmemory) {
         serverLog(LL_NOTICE, "enable rocksdb but maxmemory is zero! error config!");
@@ -508,8 +519,24 @@ robj* loadValFromRockForRdb(int dbid, sds key) {
     // We tempory call the func for rdb test
     // but it is not correct, because rdb is in another pid
     // in futrue, we need client/server model to solve the problem 
+
     robj *o;
-    _doRockJobInRockThread(dbid, key, &o);
+
+    if (server.inSubChildProcessState) {
+        // serverLog(LL_NOTICE, "In subprocess envirenmont");
+        sds val = requestSnapshotValByKeyInRdbProcess(dbid, key, server.rockRdbParams);
+        if (val) {
+            o = desObject(val, sdslen(val));
+            sdsfree(val);
+        } else {
+            o = NULL;
+            serverLog(LL_WARNING, "Rocksdb string val is null in child process!");
+        }
+    } else {    
+        // for main process, we get rocksdb val in main thread
+        _doRockJobInRockThread(dbid, key, &o);
+    }
+    
     return o;
 }
 
@@ -777,7 +804,7 @@ void test_add_work_key(int dbid, char *key, size_t len) {
 }
 
 size_t getMemoryOfRock() {
-    if (!server.maxmemory || !server.enable_rocksdb_feature) return 0;
+    if (!isRockFeatureEnabled()) return 0;
 
     return rocksdbapi_memory();
 }

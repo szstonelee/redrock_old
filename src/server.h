@@ -83,6 +83,8 @@ typedef long long ustime_t; /* microsecond time type. */
 #include "endianconv.h"
 #include "crc64.h"
 
+#include "rockrdb.h"
+
 /* Error codes */
 #define C_OK                    0
 #define C_ERR                   -1
@@ -1418,6 +1420,8 @@ struct redisServer {
     int enable_rocksdb_feature;
     int maxmemory_only_for_rocksdb;
     char *rockdb_dir;             /* Name of the AOF file */
+    struct RockRdbParams *rockRdbParams;
+    int inSubChildProcessState;
 };
 
 typedef struct pubsubPattern {

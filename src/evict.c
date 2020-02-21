@@ -636,7 +636,7 @@ int freeMemoryIfNeededAndSafe(void) {
 
     // return C_OK;    // tempary disable rock dumping
 
-    if (server.enable_rocksdb_feature) {
+    if (isRockFeatureEnabled()) {
         /* try decrease mememory first by dumping value to rocksdb */
         if (dumpValueToRockIfNeeded() == C_OK) 
             return C_OK;
