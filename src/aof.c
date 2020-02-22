@@ -30,6 +30,7 @@
 #include "server.h"
 #include "bio.h"
 #include "rio.h"
+#include "rock.h"
 
 #include <signal.h>
 #include <fcntl.h>
@@ -1323,6 +1324,13 @@ int rewriteAppendOnlyFileRio(rio *aof) {
 
             keystr = dictGetKey(de);
             o = dictGetVal(de);
+
+            if (o == shared.valueInRock) {
+                // if the value is in rocksdb, we need reload and replace it
+                robj *rockVal = loadValFromRockForRdb(j, keystr);
+                o = rockVal;
+            }
+
             initStaticStringObject(key,keystr);
 
             expiretime = getExpire(db,&key);
