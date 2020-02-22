@@ -36,3 +36,4 @@ deps/staticlib/libz.a
 deps/zlib-1.2.11/libz.a
 deps/zlib-1.2.11/*.lo
 deps/zlib-1.2.11/*.dylib
+deps/staticlib/libsnappy.a

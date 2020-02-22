@@ -51,6 +51,11 @@ zlib: .make-prerequisites
 
 .PHONY: zlib 
 
+snappy: 
+	cd snappy && mkdir -p build && cd build && cmake ../ && make && cp libsnappy.a ../../staticlib/
+
+.PHONY: snappy	
+
 hiredis: .make-prerequisites
 	@printf '%b %b\n' $(MAKECOLOR)MAKE$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR)
 	cd hiredis && $(MAKE) static $(HIREDIS_MAKE_FLAGS)
