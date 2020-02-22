@@ -33,5 +33,5 @@ metric/metric.iml
 metric/target
 metric/.idea
 deps/staticlib/libz.a
-deps/zlib-1.2.11/*.lo
-deps/zlib-1.2.11/*.dylib
+#deps/zlib-1.2.11/*.lo
+#deps/zlib-1.2.11/*.dylib
