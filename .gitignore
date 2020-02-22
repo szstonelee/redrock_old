@@ -32,6 +32,7 @@ Makefile.dep
 metric/metric.iml
 metric/target
 metric/.idea
+deps/staticlib/librocksdb.a
 deps/staticlib/libz.a
 deps/zlib-1.2.11/libz.a
 deps/zlib-1.2.11/*.lo

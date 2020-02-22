@@ -37,7 +37,10 @@ distclean:
 	-(cd linenoise && $(MAKE) clean) > /dev/null || true
 	-(cd lua && $(MAKE) clean) > /dev/null || true
 	-(cd jemalloc && [ -f Makefile ] && $(MAKE) distclean) > /dev/null || true
+	-(cd rocksdb && $(MAKE) clean && rm -f librocksdb.a) > /dev/null || true
 	-(cd zlib-1.2.11 && $(MAKE) distclean) > /dev/null || true
+	-(cd snappy && rm -rf build) > /dev/null || true
+	-(cd staticlib && rm -f libz.a && rm -f libsnappy.a && rm -f librocksdb.a) > /dev/null || true
 	-(rm -f .make-*)
 
 .PHONY: distclean
@@ -45,6 +48,11 @@ distclean:
 ifeq ($(BUILD_TLS),yes)
     HIREDIS_MAKE_FLAGS = USE_SSL=1
 endif
+
+rocksdb:
+	cd rocksdb &&  make static_lib && cp librocksdb.a ../staticlib/
+
+.PHONY: rocksdb
 
 zlib: .make-prerequisites
 	cd zlib-1.2.11 && ./configure --static && $(MAKE) && cp libz.a ../staticlib/
