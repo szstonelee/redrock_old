@@ -2168,8 +2168,8 @@ standardConfig configs[] = {
     createBoolConfig("appendonly", NULL, MODIFIABLE_CONFIG, server.aof_enabled, 0, NULL, updateAppendonly),
     createBoolConfig("cluster-allow-reads-when-down", NULL, MODIFIABLE_CONFIG, server.cluster_allow_reads_when_down, 0, NULL, NULL),
     
-    createBoolConfig("enable-rocksdb-feature", NULL, MODIFIABLE_CONFIG, server.enable_rocksdb_feature, 0, NULL, NULL),
-    createBoolConfig("maxmemory-only-for-rocksdb", NULL, MODIFIABLE_CONFIG, server.maxmemory_only_for_rocksdb, 1, NULL, NULL),
+    createBoolConfig("enable-rocksdb-feature", NULL, IMMUTABLE_CONFIG, server.enable_rocksdb_feature, 0, NULL, NULL),
+    createBoolConfig("maxmemory-only-for-rocksdb", NULL, IMMUTABLE_CONFIG, server.maxmemory_only_for_rocksdb, 1, NULL, NULL),
 
     /* String Configs */
     createStringConfig("aclfile", NULL, IMMUTABLE_CONFIG, ALLOW_EMPTY_STRING, server.acl_filename, "", NULL, NULL),
@@ -2183,7 +2183,7 @@ standardConfig configs[] = {
     createStringConfig("dbfilename", NULL, MODIFIABLE_CONFIG, ALLOW_EMPTY_STRING, server.rdb_filename, "dump.rdb", isValidDBfilename, NULL),
     createStringConfig("appendfilename", NULL, IMMUTABLE_CONFIG, ALLOW_EMPTY_STRING, server.aof_filename, "appendonly.aof", isValidAOFfilename, NULL),
 
-    createStringConfig("rockdbdir", NULL, MODIFIABLE_CONFIG, EMPTY_STRING_IS_NULL, server.rockdb_dir, "/opt/redrock/", NULL, NULL),
+    createStringConfig("rockdbdir", NULL, IMMUTABLE_CONFIG, EMPTY_STRING_IS_NULL, server.rockdb_dir, "/opt/redrock/", NULL, NULL),
 
     /* Enum Configs */
     createEnumConfig("supervised", NULL, IMMUTABLE_CONFIG, supervised_mode_enum, server.supervised_mode, SUPERVISED_NONE, NULL, NULL),
