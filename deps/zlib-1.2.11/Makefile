@@ -27,13 +27,13 @@ CFLAGS=-O3 -DHAVE_HIDDEN
 SFLAGS=-O3 -fPIC -DHAVE_HIDDEN
 LDFLAGS=
 TEST_LDFLAGS=-L. libz.a
-LDSHARED=gcc -dynamiclib -install_name ${exec_prefix}/lib/libz.1.dylib -compatibility_version 1 -current_version 1.2.11
+LDSHARED=gcc
 CPP=gcc -E
 
 STATICLIB=libz.a
-SHAREDLIB=libz.dylib
-SHAREDLIBV=libz.1.2.11.dylib
-SHAREDLIBM=libz.1.dylib
+SHAREDLIB=
+SHAREDLIBV=
+SHAREDLIBM=
 LIBS=$(STATICLIB) $(SHAREDLIBV)
 
 AR=libtool
@@ -73,7 +73,7 @@ OBJS = $(OBJC) $(OBJA)
 
 PIC_OBJS = $(PIC_OBJC) $(PIC_OBJA)
 
-all: static shared
+all: static
 
 static: example$(EXE) minigzip$(EXE)
 
@@ -83,7 +83,7 @@ all64: example64$(EXE) minigzip64$(EXE)
 
 check: test
 
-test: all teststatic testshared
+test: all teststatic
 
 teststatic: static
 	@TMPST=tmpst_$$; \
