@@ -1,12 +1,17 @@
 [Back Top Menu](../README.md)
 
+I tried it in my Mac. 
+It should pass in Linux and other Unix. 
+I do not guareentee it can pass in Windows. 
+
 # Compile
 
-## Enviroment for Compile
+## Enviroment for Compilation
 
 RedRock and all its dependencies are based on C/C++, so you need 
 1. gcc/g++
-2. make.
+2. make/cmake
+
 
 ## Setup
 
@@ -40,8 +45,8 @@ Tip:
 When compiling the above way like borning baby, it takes LONG time.  
 You can take a rest to have a cup of coffee.
 ### Only compile all source codes in src folder
-we do not compile from the base, because the deps library is stable.
-We only want a fresh compile. You can compile only all the source codes in the src folder.
+We do not need to compile from the base every time, because the dependency libraries are stable.
+We only want a fresh compilation. You can compile only all the source codes in the src folder.
 ```
 cd src
 make clean
