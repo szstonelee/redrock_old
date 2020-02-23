@@ -13,20 +13,22 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 它具有如下的几个特点：
 * 不启动新特性下，代码执行和Redis源代码一模一样
 * 支持Redis所有的命令
-* 支持Redis的所有的数据结构，包括：String,List,Set,Hash,SortedSet,Stream,HyperLogLog
+* 支持键值过期，所以，你可以将之作为一个Cache
+* 支持Redis的所有的数据结构，包括：String,List,Set,Hash,SortedSet,Stream,HyperLogLog,Geo
 * 支持备份和持久化，包括：全量RDB, 增量AOF；可选是否子进程备份
 * 支持可配置最大内存使用量限量
+* 支持用LRU或LFU算法选择记录入盘
 * 支持主从模式，leader & follower applica
-* 我猜测应该支持哨兵集群，Sentinel
-* 我猜测应该支持分区集群，Cluster
+* 我认为应该支持哨兵集群，Sentinel
+* 我认为应该支持分区集群，Cluster
 * 支持管道Pipeline处理
 * 支持事务Transaction
 * 支持阻塞操作Blocking
 * 支持原有的所有统计，同时有自己的统计
 * 支持慢操作的日志
 * 开启新特性后，特别能容纳大量写
-* 如何访问主要是适合内存热键，性能和Redis一样，即一台机器Million级别的rps
-* 最坏的平均随机访问情况下，性能下降估计仅一个数量级，i.e 百krps
+* 如何访问主要是适合内存热键，性能和Redis一样，即一台机器Million rps
+* 最坏的平均随机访问情况下，性能下降估计仅一个数量级，i.e 一台机器百K rps
 * 增加了Rocksdb库，但其内存使用量很低，只有几十兆
 * 维持Redis核心命令和核心逻辑单线程逻辑，避免了同步锁的代价和风险
 
