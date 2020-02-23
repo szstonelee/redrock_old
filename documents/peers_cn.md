@@ -13,6 +13,6 @@
 * [SSDB with LevelDB](http://ssdb.io/)
 * [SSSB with Rocksdb](https://github.com/ideawu/ssdb-rocks)
 
-## Memcached类似功能
+## Memcached
 
 * [Memcached exstore](https://memcached.org/blog/nvm-caching/)
