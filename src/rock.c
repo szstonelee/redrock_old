@@ -868,6 +868,10 @@ int _isValueSuitForDumpRock(sds key, dict *valueDict) {
     serverAssert(de);
     val = dictGetVal(de);
     serverAssert(val);
+
+    // stream object never evict
+    if (val->type == OBJ_STREAM) return 0;
+
     return val->refcount == 1 ? 1: 0;
 }
 

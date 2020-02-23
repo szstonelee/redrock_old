@@ -252,7 +252,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"substr",getrangeCommand,4,
      "read-only @string",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"incr",incrCommand,2,
      "write use-memory fast @string",
@@ -420,11 +420,11 @@ struct redisCommand redisCommandTable[] = {
 
     {"zunionstore",zunionstoreCommand,-4,
      "write use-memory @sortedset",
-     0,zunionInterGetKeys,0,0,0,0,0,0,NULL},
+     0,zunionInterGetKeys,0,0,0,0,0,0,cmdCheckRockForZstore},
 
     {"zinterstore",zinterstoreCommand,-4,
      "write use-memory @sortedset",
-     0,zunionInterGetKeys,0,0,0,0,0,0,NULL},
+     0,zunionInterGetKeys,0,0,0,0,0,0,cmdCheckRockForZstore},
 
     {"zrange",zrangeCommand,-4,
      "read-only @sortedset",
@@ -432,7 +432,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"zrangebyscore",zrangebyscoreCommand,-4,
      "read-only @sortedset",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"zrevrangebyscore",zrevrangebyscoreCommand,-4,
      "read-only @sortedset",
@@ -556,7 +556,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"incrby",incrbyCommand,3,
      "write use-memory fast @string",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"decrby",decrbyCommand,3,
      "write use-memory fast @string",
@@ -592,17 +592,17 @@ struct redisCommand redisCommandTable[] = {
 
     {"move",moveCommand,3,
      "write fast @keyspace",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     /* Like for SET, we can't mark rename as a fast command because
      * overwriting the target key may result in an implicit slow DEL. */
     {"rename",renameCommand,3,
      "write @keyspace",
-     0,NULL,1,2,1,0,0,0,NULL},
+     0,NULL,1,2,1,0,0,0,cmdCheckRockForOneKey},
 
     {"renamenx",renamenxCommand,3,
      "write fast @keyspace",
-     0,NULL,1,2,1,0,0,0,NULL},
+     0,NULL,1,2,1,0,0,0,cmdCheckRockForOneKey},
 
     {"expire",expireCommand,3,
      "write fast @keyspace",
@@ -705,7 +705,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"sort",sortCommand,-2,
      "write use-memory @list @set @sortedset @dangerous",
-     0,sortGetKeys,1,1,1,0,0,0,NULL},
+     0,sortGetKeys,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"info",infoCommand,-1,
      "ok-loading ok-stale random @dangerous",
@@ -745,7 +745,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"debug",debugCommand,-2,
      "admin no-script",
-     0,NULL,0,0,0,0,0,0,NULL},
+     0,NULL,0,0,0,0,0,0,cmdCheckRockExcludeFirstArg},
 
     {"config",configCommand,-2,
      "admin ok-loading ok-stale no-script",
@@ -797,7 +797,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"migrate",migrateCommand,-6,
      "write random @keyspace @dangerous",
-     0,migrateGetKeys,0,0,0,0,0,0,NULL},
+     0,migrateGetKeys,0,0,0,0,0,0,cmdCheckRockForMigrate},
 
     {"asking",askingCommand,1,
      "fast @keyspace",
@@ -875,36 +875,36 @@ struct redisCommand redisCommandTable[] = {
 
     {"geoadd",geoaddCommand,-5,
      "write use-memory @geo",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     /* GEORADIUS has store options that may write. */
     {"georadius",georadiusCommand,-6,
      "write @geo",
-     0,georadiusGetKeys,1,1,1,0,0,0,NULL},
+     0,georadiusGetKeys,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"georadius_ro",georadiusroCommand,-6,
      "read-only @geo",
-     0,georadiusGetKeys,1,1,1,0,0,0,NULL},
+     0,georadiusGetKeys,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"georadiusbymember",georadiusbymemberCommand,-5,
      "write @geo",
-     0,georadiusGetKeys,1,1,1,0,0,0,NULL},
+     0,georadiusGetKeys,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"georadiusbymember_ro",georadiusbymemberroCommand,-5,
      "read-only @geo",
-     0,georadiusGetKeys,1,1,1,0,0,0,NULL},
+     0,georadiusGetKeys,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"geohash",geohashCommand,-2,
      "read-only @geo",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"geopos",geoposCommand,-2,
      "read-only @geo",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"geodist",geodistCommand,-4,
      "read-only @geo",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     {"pfselftest",pfselftestCommand,1,
      "admin @hyperloglog",
@@ -912,7 +912,7 @@ struct redisCommand redisCommandTable[] = {
 
     {"pfadd",pfaddCommand,-2,
      "write use-memory fast @hyperloglog",
-     0,NULL,1,1,1,0,0,0,NULL},
+     0,NULL,1,1,1,0,0,0,cmdCheckRockForOneKey},
 
     /* Technically speaking PFCOUNT may change the key since it changes the
      * final bytes in the HyperLogLog representation. However in this case
@@ -920,11 +920,11 @@ struct redisCommand redisCommandTable[] = {
      * affair, and the command is semantically read only. */
     {"pfcount",pfcountCommand,-2,
      "read-only @hyperloglog",
-     0,NULL,1,-1,1,0,0,0,NULL},
+     0,NULL,1,-1,1,0,0,0,cmdCheckRockForAllKeys},
 
     {"pfmerge",pfmergeCommand,-2,
      "write use-memory @hyperloglog",
-     0,NULL,1,-1,1,0,0,0,NULL},
+     0,NULL,1,-1,1,0,0,0,cmdCheckRockForAllKeys},
 
     {"pfdebug",pfdebugCommand,-3,
      "admin write",

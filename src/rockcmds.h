@@ -48,6 +48,8 @@ void cmdCheckRockForOneKey(client *c, struct redisCommand *cmd, robj **argv, int
 void cmdCheckRockExcludeLastArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
 void cmdCheckRockForAllKeys(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
 void cmdCheckRockExcludeFirstArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
+void cmdCheckRockForZstore(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
+void cmdCheckRockForMigrate(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
 
 #endif
 

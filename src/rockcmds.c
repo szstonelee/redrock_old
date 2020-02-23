@@ -98,3 +98,77 @@ void cmdCheckRockExcludeFirstArg(client *c, struct redisCommand *cmd, robj **arg
             listAddNodeTail(l, key->ptr);
     }
 }
+
+/* check t_zset.c zunionInterGenericCommand() from more reference */
+void cmdCheckRockForZstore(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {
+    UNUSED(cmd);
+
+    long setnum;
+
+    /* expect setnum input keys to be given */
+    if ((getLongFromObjectOrReply(c, c->argv[2], &setnum, NULL) != C_OK))
+        return;
+
+    if (setnum < 1) 
+        return;
+
+    /* test if the expected number of keys would overflow */
+    if (setnum > argc-3) 
+        return;
+
+    for (long i = 0, j = 3; i < setnum; i++, j++) {
+        robj *key = argv[j];
+        robj *val = lookupKeyNoSideEffect(c->db,key);
+        if (val == shared.valueInRock)
+            listAddNodeTail(l, key->ptr);
+    }
+}
+
+
+/* check cluster.c migrateCommand() for more reference */
+void cmdCheckRockForMigrate(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {
+    UNUSED(cmd);
+    UNUSED(argc);
+
+    /* To support the KEYS option we need the following additional state. */
+    int first_key = 3; /* Argument index of the first key. */
+    int num_keys = 1;  /* By default only migrate the 'key' argument. */
+
+    /* Parse additional options */
+    for (int j = 6; j < c->argc; j++) {
+        int moreargs = j < c->argc-1;
+        if (!strcasecmp(c->argv[j]->ptr,"copy")) {
+        } else if (!strcasecmp(c->argv[j]->ptr,"replace")) {
+        } else if (!strcasecmp(c->argv[j]->ptr,"auth")) {
+            if (!moreargs) {
+                return;
+            }
+            j++;
+        } else if (!strcasecmp(c->argv[j]->ptr,"keys")) {
+            if (sdslen(c->argv[3]->ptr) != 0) {
+                return;
+            }
+            first_key = j+1;
+            num_keys = c->argc - j - 1;
+            break; /* All the remaining args are keys. */
+        } else {
+            return;
+        }
+    }
+
+    /* Sanity check */
+    long timeout;
+    long dbid;
+    if (getLongFromObjectOrReply(c,c->argv[5],&timeout,NULL) != C_OK ||
+        getLongFromObjectOrReply(c,c->argv[4],&dbid,NULL) != C_OK)
+    {
+        return;
+    }
+
+    for (int j = 0; j < num_keys; j++) {
+        robj *key = argv[first_key+j];
+        robj *val = lookupKeyNoSideEffect(c->db,key);
+        if (val == shared.valueInRock)
+            listAddNodeTail(l, key->ptr);
+    }
+}
