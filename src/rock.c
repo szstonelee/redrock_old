@@ -73,60 +73,6 @@ int isRockFeatureEnabled() {
         return 0;
 }
 
-/* a lot of commands only use one key, we use one common function for all */
-void cmdCheckRockForOneKey(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {
-    UNUSED(cmd);
-    UNUSED(argc);
-    robj *key = argv[1];
-    robj *val = lookupKeyNoSideEffect(c->db, key);
-    if (val == shared.valueInRock) 
-        listAddNodeTail(l, key->ptr);
-}
-
-/* commands such as blpop, multi key, every arg except last arg is the keys */
-void cmdCheckRockExcludeLastArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {
-    serverAssert(argc > 2);    // first command, last param is no key, so bigger than 2
-
-    UNUSED(cmd);
-    UNUSED(argc);
-
-    for (int i = 1; i < argc-1; ++i) {
-        robj *key = argv[i];
-        robj *val = lookupKeyNoSideEffect(c->db, key);
-        if (val == shared.valueInRock)
-            listAddNodeTail(l, key->ptr);
-    }
-}
-
-/* command like RPOPLPUSH, every param is key */
-void cmdCheckRockForAllKeys(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {
-    serverAssert(argc >= 2);    
-
-    UNUSED(cmd);
-    UNUSED(argc);
-
-    for (int i = 1; i < argc; ++i) {
-        robj *key = argv[i];
-        robj *val = lookupKeyNoSideEffect(c->db, key);
-        if (val == shared.valueInRock)
-            listAddNodeTail(l, key->ptr);
-    }
-}
-
-/* command like OBJECT, first param, every thing is key */
-void cmdCheckRockExcludeFirstArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {
-    serverAssert(argc >= 2);    // NOTE: allow no key, like command OBJECT HELP
-
-    UNUSED(cmd);
-    UNUSED(argc);
-
-    for (int i = 2; i < argc; ++i) {
-        robj *key = argv[i];
-        robj *val = lookupKeyNoSideEffect(c->db, key);
-        if (val == shared.valueInRock)
-            listAddNodeTail(l, key->ptr);
-    }
-}
 
 /* please reference EVPOOL_SIZE, EVPOOL_CACHED_SDS_SIZE */
 #define RKPOOL_SIZE 16

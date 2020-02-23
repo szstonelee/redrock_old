@@ -36,6 +36,7 @@
 #include "rock.h"
 #include "rockserdes.h"
 #include "rockrdb.h"
+#include "rockcmds.h"
 
 #include <time.h>
 #include <signal.h>
