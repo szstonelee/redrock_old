@@ -8,7 +8,7 @@ Redis可以不用什么配置，命令行下简单执行./redis-server即可。
 
 ## RedRock需要的参数
 ### maxmemory
-首先是必须设置Redis本身的一个参数maxmemory为一个大于0的数值，比如100mb 
+首先是必须设置Redis本身的一个参数maxmemory为一个大于0的数值，比如100mb
 原因很简单，没有内限制，我们根本就不需要RedRock后面的存储 
 所以，如果maxmemory==0，意味RedRock特性被禁止。 
 注意：
