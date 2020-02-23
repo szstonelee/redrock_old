@@ -1,8 +1,16 @@
-[submodule "deps/rocksdb"]
+[submodule "rocksdb"]
 	path = deps/rocksdb
 	url = https://github.com/facebook/rocksdb
 
-[submodule "deps/snappy"]
+[submodule "snappy"]
 	path = deps/snappy
 	url = https://github.com/google/snappy
+
+[submodule "lz4"]
+	path = deps/lz4
+	url = https://github.com/lz4/lz4
+
+[submodule "bzip2"]
+	path = deps/bzip2
+	url = https://sourceware.org/git/bzip2.git
 

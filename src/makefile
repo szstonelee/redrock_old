@@ -23,7 +23,7 @@ release_hdr := $(shell sh -c './mkreleasehdr.sh')
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
 OPTIMIZATION?=-O2
-DEPENDENCY_TARGETS=hiredis linenoise lua rocksdb zlib snappy
+DEPENDENCY_TARGETS=hiredis linenoise lua rocksdb zlib snappy lz4 bzip2
 NODEPS:=clean distclean
 
 # Default settings
@@ -269,7 +269,7 @@ rocksdbapi.o:
 
 # redis-server
 $(REDIS_SERVER_NAME): $(REDIS_SERVER_OBJ) rocksdbapi.o
-	$(REDIS_LD) -o $@ $^ ../deps/hiredis/libhiredis.a ../deps/lua/src/liblua.a ../deps/staticlib/librocksdb.a ../deps/staticlib/libz.a ../deps/staticlib/libbz2.a ../deps/staticlib/libsnappy.a $(FINAL_LIBS)
+	$(REDIS_LD) -o $@ $^ ../deps/hiredis/libhiredis.a ../deps/lua/src/liblua.a ../deps/staticlib/librocksdb.a ../deps/staticlib/libz.a ../deps/staticlib/libbz2.a ../deps/staticlib/libsnappy.a ../deps/staticlib/liblz4.a $(FINAL_LIBS)
 
 # redis-sentinel
 $(REDIS_SENTINEL_NAME): $(REDIS_SERVER_NAME)
@@ -300,8 +300,8 @@ dict-benchmark: dict.c zmalloc.c sds.c siphash.c
 %.o: %.c .make-prerequisites
 	$(REDIS_CC) -c $<
 
-rocksdb:
-	cd ../deps/rocksdb && $(MAKE) static_lib
+#rocksdb:
+#	cd ../deps/rocksdb && $(MAKE) static_lib
 
 clean:
 	#rm .make-settings

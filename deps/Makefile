@@ -40,7 +40,9 @@ distclean:
 	-(cd rocksdb && $(MAKE) clean && rm -f librocksdb.a) > /dev/null || true
 	-(cd zlib-1.2.11 && $(MAKE) distclean) > /dev/null || true
 	-(cd snappy && rm -rf build) > /dev/null || true
+	-(cd lz4 && $(MAKE) clean && rm -f lib/liblz4.a) > /dev/null || true
 	-(cd staticlib && rm -f libz.a && rm -f libsnappy.a && rm -f librocksdb.a) > /dev/null || true
+	-(cd bzip2 && $(MAKE) clean && rm -f libbz2.a) > /dev/null || true
 	-(rm -f .make-*)
 
 .PHONY: distclean
@@ -63,6 +65,16 @@ snappy:
 	cd snappy && mkdir -p build && cd build && cmake ../ && make && cp libsnappy.a ../../staticlib/
 
 .PHONY: snappy	
+
+lz4:
+	cd lz4 && make && cp lib/liblz4.a ../staticlib/
+
+.PHONY: lz4
+
+bzip2:
+	cd bzip2 && make && cp libbz2.a ../staticlib/
+
+.PHONY: bzip2
 
 hiredis: .make-prerequisites
 	@printf '%b %b\n' $(MAKECOLOR)MAKE$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR)
