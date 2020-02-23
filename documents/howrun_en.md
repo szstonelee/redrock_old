@@ -8,7 +8,7 @@ But if you want enable the RedRock features, you need the following config param
 
 ## Config Parameters for RedRock
 ### maxmemory
-First and most, you need set "maxmemory" bigger than zero, e.g. 100mb
+First and most, you need set "maxmemory" bigger than zero, e.g. 100mb 
 Because if no limit for memory, we do not need RedRock and its backend storage. 
 It means if maxmemory==0, we disable RockRed features. 
 NOTE:
@@ -24,22 +24,22 @@ The default value for enable-rocksdb-feature is no.
 It is for which folder where RedRock store data in disk using Rocksdb.
 The default value for rockdbdir is /opt/redrock 
 NOTE: 
-1. The rockdbdir folder is only for tempary usage. Every time when RedRock starts, it deletes the folder.
+1. The rockdbdir folder is only for temporary usage. Every time when RedRock starts, it deletes the folder.
 2. After redis-server stop, you can not use the rockdbdir folder as a backup because it does not include the key/value in memory.
-3. If you want real backup, please use RDB/AOF. Reference：[Backup and Persistence](persistence_en.md)
+3. If you want a real backup, please use RDB/AOF. Reference：[Backup and Persistence](persistence_en.md)
 
 ### maxmemory-only-for-rocksdb
 This parameter is optional. The default value is yes.
 
 #### when maxmemory-only-for-rocksdb == yes
 1. When memory usage is close to "maxmemory"，RedRock will try to dump value to storage but always keep key in memory.
-2. If the above situation go on worse, that is, almost every value goes to storage and the memory usage will still be over "maxmemory", RedRock will deny those commands which will consume memory. Usually these kinds of command are for updating. So in this situation, RedRock will be something like Read-Only server.
-3. If you delete some keys in the above situation and make rooms, RedRock recover and go on for all service.
+2. If the above situation go on worse, that is, almost every value goes to storage and the memory usage will still reach "maxmemory" limit, RedRock will deny those commands which will consume memory. Usually these kinds of command are for updating/inserting. So in this situation, RedRock will be something like Read-Only server.
+3. If you delete some keys in the above situation and make new rooms for memory, RedRock recover and go on for all service as usual.
 
 #### when maxmemory-only-for-rocksdb == no
-As usall, RedRock will try to dump every value to storage to save room for memory unti it comes to the above situation where almost every value goes to storage and the memory is still not enough. 
+As usual, RedRock will try to dump every value to storage to save room for memory unti it comes to the above situation where almost every value goes to storage and the memory is still not enough. 
 It will come to two solutions
-1. If Redis is configured as to can delete keys, Redis will delete some key for memory room.
+1. If Redis is configured as to be able to delete keys, Redis will delete some key for memory room.
 Please reference：https://redis.io/topics/lru-cache
 2. If Redis is configured to not delete keys, Redis will deny some kinds commands. In such way, Redis is like Read-Only server.
 
@@ -48,9 +48,9 @@ Please reference https://redis.io/topics/lru-cache
 When we select some keys to delete in the above situation, there are some policies we can use
 1. LRU: keep the recent visited keys to survive
 2. LFU: keep the most frequent visited keys to survive  
-3. Random: every key has the born-oppertunity to survive
+3. RANDOM: every key has the born-even-fair-oppertunity to survive or be killed
 
-## 如何修改生效参数
+## How to config
 
 How to make the above config parameters to be effective, there are two ways.
 
@@ -83,7 +83,7 @@ There are some questions we can think
 Redis will use OS page swap files as memory. In this way, memory is unlimited for OS, but it is really really slow.
 Please reference：https://redis.io/topics/faq#what-happens-if-redis-runs-out-of-memory
 
-2. In the above situation, can we use SSD as OS swap file because SSD is fater than HDD?
+2. In the above situation, can we use SSD as OS swap file because SSD is pretty faster than HDD?
 The answer is simiplly NO. Please reference an article from Redis author antierz. [《Redis with an SSD swap, not what you want》](http://antirez.com/news/52)
 
 3. If we enable maxmemory, but do not enable enable-rocksdb-feature, what will happen? 

@@ -10,7 +10,11 @@ Redis is a wonderful NOSQL based on memory. But memory is too expensive. We hope
 * Same fast and strong as Redis
 * Can support storage (HDD or SSD) as backend
 
-As SSD is becoming cheaper and has good performance, RedRock wants to have one stone hitting two birds. 
+As SSD is becoming cheaper and has good performance, it is why I (pls call me Stone) code RedRock. One stone to hit two birds. 
+
+NOTE: 
+I only code the project for a couple of months and only use my off-work time. 
+It is not that mature. Wish you use it more and give me feedbacks. Thank you.
 
 ## RedRock Features
 * Pure Redis. When not enable storage, RedRock is running almost the same codes as Redis
@@ -23,16 +27,18 @@ As SSD is becoming cheaper and has good performance, RedRock wants to have one s
 * Support Leader/Follower(i.e. Master/Slave) replica
 * I think it would support Sentinel
 * I think it would support Cluster
+* I think it would support distributed lock, but I think Martin Kleppmann is right 
 * Support Redis Pipeline
 * Support Redis Transaction
 * Support Redis Blocking
-* Support original stats from Redis, plus our storage stats
+* Support original stats for Redis, plus our storage stats
 * Support slow log
 * Good for mass intensive writing to storage
 * When main load is for hot keys, performance is almost the same as Pure Redis, i.e. Million rps for one node
-* When coming to avarage random key visits, performance maybe degrade by 1 maganitude order，i.e Hundreds K rps for one node
-* Using Rocksdb library, but overload of db engine is limited to tens MB
+* When coming to avarage random key visit pattern, performance maybe degrade by 1 maganitude order，i.e Hundreds K rps for one node
+* Using Rocksdb library, but overload of memory in db engine is limited to tens MB
 * Keep the main logic in main thread as Redis, low level for thread switch and race risks.
+* Key/value length limit is same as Redis
 
 # How Compile
 
@@ -56,7 +62,7 @@ As SSD is becoming cheaper and has good performance, RedRock wants to have one s
 
 # Performance
 
-[We focus on the worst condition performance, more details.](documents/performance_en.md)
+[I focus on the worst condition performance, more details.](documents/performance_en.md)
 
 # Backup and Persistence
 

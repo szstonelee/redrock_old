@@ -1,6 +1,8 @@
 [Back Top Menu](../README.md)
 
-I tried it in my Mac. It should pass in Linux and other Unix. I do not guareentee it can pass in Windows. 
+From the author, Stone,
+I tried it in my Mac. It should pass in Linux and other Unix. I do not guareentee it can pass in Windows.
+If anyone can compile it in Linux or Windows, please let me know. Thank you. Please mail to: szstonelee@vip.qq.com 
 
 # Compile
 
