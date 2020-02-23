@@ -1,8 +1,8 @@
-[回英文总目录](../README.md) 
+[英文总目录可点这里](../README.md) 
 
 # 简介
 
-RedRock，就是 Redis + Rocksdb.
+RedRock，简而言之，就是 Redis + Rocksdb。
 
 Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 * 有Redis的基于内存的快速

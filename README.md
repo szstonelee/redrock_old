@@ -1,17 +1,20 @@
-[中文请点这里, click here for Chinese help](../menu_en.md) 
+[中文帮助请点这里, click here for Chinese documents](documents/menu_en.md) 
 
 # Introduction
 
-RedRock is a combination of Redis and Rocksdb.
+## One Word
 
-Redis is a wonderful NOSQL for memory. But memory is too expensive. We hope:
-* Something fast and strong as Redis
-* Can support storage as backend
+RedRock is a combination of [Redis](https://github.com/antirez/redis) and [Rocksdb](https://rocksdb.org/).
+
+## Why
+Redis is a wonderful NOSQL based on memory. But memory is too expensive. We hope:
+* Same fast and strong as Redis
+* Can support storage (HDD or SSD) as backend
 
 As SSD is becoming cheaper and has good performance, the project wants to have one stone to hit two birds. 
 
-Features list of RedRock：
-* Pure Redis. When no enable the storage, it is the same speed (i.e. almost the same codes).
+## RedRock Features
+* Pure Redis. When not enable storage, RedRock is the same speed because almost running the same codes.
 * Support all Redis commands.
 * Support all Redis data structures, including, String,List,Set,Hash,SortedSet,Stream,HyperLogLog
 * Support persistence, including RDB and AOF, backup using fork() or no fork()
@@ -44,20 +47,20 @@ Features list of RedRock：
 
 # Supported Redis Feature
 
-[Maybe support all Redis features, e.g. Master/Slave, Cluster, Transaction, more details](documents/feature_en.md)
+[Maybe support all Redis features, e.g. Master/Slave, Cluster, Transaction, more details.](documents/feature_en.md)
 
-# Test Case
+# Test Cases
 
-[You can tested it for these feature](documents/test_en.md)
+[You can test it for these features.](documents/test_en.md)
 
 # Performance
 
-[We focus on the worst condition performance, more details](documents/performance_en.md)
+[We focus on the worst condition performance, more details.](documents/performance_en.md)
 
 # Backup and Persistence
 
-[How backup and persist the memory data with the storage data](documents/persistence_en.md)
+[How backup and persist the memory data with the storage data.](documents/persistence_en.md)
 
 # Peers Similar Projects
 
-[You can compare and choose similiar projects from the peers](documents/peers_en.md)
+[You can compare and choose other project from the similiar peers.](documents/peers_en.md)
