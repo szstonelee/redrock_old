@@ -39,7 +39,7 @@ RedRock会尽量把Value存储到存储山上，腾出内存空间，但所有�
 直到RedRock精疲力尽，然后就进入到Redis传统的处理方式，有两种结果：
 1. 如果Redis配置的是可以删除键腾出空间，Redis将会删除一些key来腾出空间 
 参考：https://redis.io/topics/lru-cache
-2. 如果Redis配置的是不允许遮掩个，Redis将会拒绝服务这个命令，这个命令一般是修改型的命令，意味着Redis变成只读的
+2. 如果Redis配置的是不允许删除键，Redis将会拒绝服务这个命令，这个命令一般是修改型的命令，意味着Redis变成只读的
 
 
 ### 其他Redis相关参数
