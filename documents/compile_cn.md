@@ -24,7 +24,7 @@ ls -all redis-server
 ```
 ./redis-server
 ```
-用redis-cli连如试试，简单测试一下set, get
+用redis-cli连接试试，简单测试一下set, get
 
 ## 编译选项
 ### 底层重新编译
@@ -34,7 +34,7 @@ cd src
 make distclean
 make
 ```
-温馨提示：上面这个编译很耗时间，主要是Rocksdb的编译很漫长，你可以喝完一杯咖啡再回来看结果
+温馨提示：上面这个编译很耗时间，主要是Rocksdb library的编译很漫长，你可以喝完一杯咖啡再回来看结果
 ### 源代码重新编译
 不需要重新基础库，但对于src目录下的所有源文件编译
 ```
