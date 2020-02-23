@@ -43,6 +43,7 @@ distclean:
 	-(cd lz4 && $(MAKE) clean && rm -f lib/liblz4.a) > /dev/null || true
 	-(cd staticlib && rm -f libz.a && rm -f libsnappy.a && rm -f librocksdb.a) > /dev/null || true
 	-(cd bzip2 && $(MAKE) clean && rm -f libbz2.a) > /dev/null || true
+	-(cd zstd && $(MAKE) clean && rm -f lib/libzstd.a) > /dev/null || true
 	-(rm -f .make-*)
 
 .PHONY: distclean
@@ -75,6 +76,11 @@ bzip2:
 	cd bzip2 && make && cp libbz2.a ../staticlib/
 
 .PHONY: bzip2
+
+zstd:
+	cd zstd && make && cp lib/libzstd.a ../staticlib/
+
+.PHONY: zstd
 
 hiredis: .make-prerequisites
 	@printf '%b %b\n' $(MAKECOLOR)MAKE$(ENDCOLOR) $(BINCOLOR)$@$(ENDCOLOR)

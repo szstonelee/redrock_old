@@ -40,3 +40,4 @@ deps/zlib-1.2.11/*.dylib
 deps/staticlib/libsnappy.a
 deps/staticlib/liblz4.a
 deps/staticlib/libbz2.a
+deps/staticlib/libzstd.a
