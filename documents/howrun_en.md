@@ -4,7 +4,7 @@
 
 Redis can simiplly run with no arguments. In CLI, type ./redis-server and run redis。
 
-But if you want enable the RedRock features, you need the following config parameters.
+But if you want the RedRock new features, you need the following config parameters.
 
 ## Config Parameters for RedRock
 ### maxmemory
@@ -73,7 +73,7 @@ e.g.
 Please modify redis.conf, add enable-rocksdb-feature, rockdbdir, maxmemory-only-for-rocksdb. 
 Please reference：https://redis.io/topics/config
 
-### Can not changed online
+### Can not change online
 
 You can not use "config set" commands to set these parameters online except maxmemory. 
 
