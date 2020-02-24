@@ -27,10 +27,10 @@ Wish you use it more and leave feedbacks at github. Thank you.
 * Support persistence, including RDB and AOF, backup could use fork() or main thread
 * Can config maximum memory usage
 * Policy for dumping value to storage supports LRU and LFU
-* Support Leader/Follower(i.e. Master/Slave) replica
-* I think it would support Sentinel
-* I think it would support Cluster
-* I think it would support distributed lock, but I think Martin Kleppmann is right 
+* Support Replication: Leader/Follower(i.e. Master/Slave) replica
+* I think it would support Redis Sentinel
+* I think it would support Reids Cluster. So no need for Twemproxy and Codis
+* I think it would support distributed lock, RedLock, but I think Martin Kleppmann is right 
 * Support Redis Pipeline
 * Support Redis Transaction
 * Support Redis Blocking
@@ -43,6 +43,7 @@ Wish you use it more and leave feedbacks at github. Thank you.
 * Using Rocksdb library, but overload of memory in db engine is limited to tens MB
 * Keep the main logic in main thread as Redis, low level for thread switch and race risks.
 * Key/value length limit is same as Redis
+* Support multi databases and can change the number
 
 # How Compile
 

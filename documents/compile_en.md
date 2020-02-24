@@ -2,7 +2,7 @@
 
 From the author, Stone,
 I tried it in my Mac. It should pass in Linux and other Unix. I do not guareentee it can pass in Windows.
-If anyone can compile it in Linux or Windows, please let me know. Thank you. Please mail to: szstonelee@vip.qq.com 
+If anyone can compile it in Linux or Windows, please let me know. Thank you.
 
 # Compile
 
@@ -21,7 +21,7 @@ git clone https://github.com/szstonelee/redrock redrock
 cd redrock
 cd src
 make
-```
+``
 If no error shows, you will see an execute file named as redis-server in redrock/src folder.
 ```
 ls -all redis-server

@@ -19,8 +19,8 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 * 支持可配置最大内存使用量限量
 * 支持用LRU或LFU算法选择记录入盘
 * 支持主从模式，leader & follower applica
-* 我认为应该支持哨兵集群，Sentinel
-* 我认为应该支持分区集群，Cluster
+* 我认为应该支持哨兵集群，Redis Sentinel
+* 我认为应该支持分区集群，Redis Cluster. 如果这样，就不需要Twemproxy或者Codis
 * 我认为应该支持Redis的分布锁，但我支持Martin Kleppmann关于Redis分布锁的看法 
 * 支持管道Pipeline处理
 * 支持事务Transaction
@@ -33,6 +33,7 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 * 最坏的平均随机访问情况下，性能下降估计仅一个数量级，i.e 一台机器百K rps
 * 增加了Rocksdb库，但其内存使用量很低，只有几十兆
 * 维持Redis核心命令和核心逻辑单线程逻辑，避免了同步锁的代价和风险
+* 支持多个库，并且可配置
 
 # 编译
 
