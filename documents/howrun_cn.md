@@ -64,6 +64,10 @@ RedRock会尽量把Value存储到存储山上，腾出内存空间，但所有�
 修改redis.conf文件里，加入enable-rocksdb-feature, rockdbdir, maxmemory-only-for-rocksdb这三个值 
 可参考：https://redis.io/topics/config
 
+### 不允许在线即时修改
+
+你不能用 "config set" 命令去在线修改上面的参数，除了maxmemory. 
+
 ### 检查是否生效
 
 用redis-cli连入，然后执行

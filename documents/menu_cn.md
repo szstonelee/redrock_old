@@ -21,9 +21,11 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 * 支持主从模式，leader & follower applica
 * 我认为应该支持哨兵集群，Sentinel
 * 我认为应该支持分区集群，Cluster
+* 我认为应该支持Redis的分布锁，但我支持Martin Kleppmann关于Redis分布锁的看法 
 * 支持管道Pipeline处理
 * 支持事务Transaction
 * 支持阻塞操作Blocking
+* 支持订阅/发布Publication/Subscribe
 * 支持原有的所有统计，同时有自己的统计
 * 支持慢操作的日志
 * 开启新特性后，特别能容纳大量写

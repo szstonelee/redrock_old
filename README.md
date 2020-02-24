@@ -1,20 +1,23 @@
 [中文帮助请点这里, click here for Chinese documents](documents/menu_cn.md) 
 
-# Introduction
+# RedRock Homepage
 
-## One Sentence
+## Introduction
 RedRock is a combination of [Redis](https://github.com/antirez/redis) and [Rocksdb](https://rocksdb.org/).
 
 ## Why
 Redis is a wonderful NOSQL based on memory. But memory is too expensive. We hope,
 * Same fast and strong as Redis
-* Can support storage (HDD or SSD) as backend
+* Redis can extend to storage (HDD or SSD)
 
-As SSD is becoming cheaper and has good performance, it is why I (pls call me Stone) code RedRock. One stone to hit two birds. 
+As SSD is becoming cheaper and has good performance, it is why I, enigneer Stone, code RedRock. 
+
+I wish one stone to hit two birds. 
 
 NOTE: 
-I only code the project for a couple of months and only use my off-work time. 
-It is not that mature. Wish you use it more and give me feedbacks. Thank you.
+I only code the project for a couple of months and only use my off-busy-work time. 
+It is not as mature as a project for ten years. 
+Wish you use it more and leave feedbacks at github. Thank you.
 
 ## RedRock Features
 * Pure Redis. When not enable storage, RedRock is running almost the same codes as Redis
@@ -31,6 +34,7 @@ It is not that mature. Wish you use it more and give me feedbacks. Thank you.
 * Support Redis Pipeline
 * Support Redis Transaction
 * Support Redis Blocking
+* Support subscribe/publish
 * Support original stats for Redis, plus our storage stats
 * Support slow log
 * Good for mass intensive writing to storage
