@@ -45,7 +45,8 @@ MALLOC=libc
 ifneq ($(uname_M),armv6l)
 ifneq ($(uname_M),armv7l)
 ifeq ($(uname_S),Linux)
-	MALLOC=jemalloc
+	#MALLOC=jemalloc
+	MALLOC=libc
 endif
 endif
 endif
@@ -69,8 +70,7 @@ ifeq ($(USE_TCMALLOC_MINIMAL),yes)
 endif
 
 ifeq ($(USE_JEMALLOC),yes)
-	#MALLOC=jemalloc
-	MALLOC=libc
+	MALLOC=jemalloc
 endif
 
 ifeq ($(USE_JEMALLOC),no)
