@@ -16,7 +16,7 @@
 CC = gcc
 GPP = g++
 
-PATH := ../deps:$(PATH)
+#PATH := ../deps:$(PATH)
 
 release_hdr := $(shell sh -c './mkreleasehdr.sh')
 uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
@@ -69,7 +69,8 @@ ifeq ($(USE_TCMALLOC_MINIMAL),yes)
 endif
 
 ifeq ($(USE_JEMALLOC),yes)
-	MALLOC=jemalloc
+	#MALLOC=jemalloc
+	MALLOC=libc
 endif
 
 ifeq ($(USE_JEMALLOC),no)
