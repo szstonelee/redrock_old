@@ -615,7 +615,8 @@ void _checkRockForMultiCmd(client *c, list *l) {
  * side effects: 
  * 1. update the rock key number waiting for rocksdb value 
  * 2. update the db->rockKeys
- * 3. if not job exist, init a job */
+ * 3. if not job exist, init a job 
+ * NOTE: scripts.c can not call this func, because script need execute as a whole */
 void checkCallValueInRock(client *c) {
     serverAssert(c);
     serverAssert(c->rockKeyNumber == 0);
