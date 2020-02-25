@@ -62,6 +62,8 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>src/main</sourceDirectory>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -103,7 +105,7 @@
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>metrics.MainApp</mainClass>
+                  <mainClass>metric.MainApp</mainClass>
                 </transformer>
               </transformers>
             </configuration>

@@ -1,4 +1,4 @@
-package metrics;
+package metric;
 
 class RedisConfig {
     final String server = "127.0.0.1";

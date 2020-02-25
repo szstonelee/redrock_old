@@ -1,4 +1,4 @@
-package metrics;
+package metric;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;

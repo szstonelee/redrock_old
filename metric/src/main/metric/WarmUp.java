@@ -1,9 +1,10 @@
-package metrics;
+package metric;
 
 import redis.clients.jedis.Jedis;
 
 import java.util.Collections;
 import java.util.List;
+import java.lang.Thread;
 
 class WarmUp {
     private static final int TRY_UPPER_BOUND = 100000;
@@ -14,6 +15,7 @@ class WarmUp {
 
         try (Jedis jedis = JedisUtils.acquire()) {
             jedis.flushDB();
+            Thread.sleep(5000);
             for (KV item : list) {
                 int tryCount = 0;
                 while (tryCount < TRY_UPPER_BOUND) {
@@ -33,7 +35,9 @@ class WarmUp {
                     }
                 }
             }
+        } catch (InterruptedException e) {
         }
+
         return list;
     }
 }

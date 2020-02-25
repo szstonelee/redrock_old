@@ -1,4 +1,4 @@
-package metrics;
+package metric;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.RandomStringUtils;

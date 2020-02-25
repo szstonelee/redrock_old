@@ -1,4 +1,4 @@
-package metrics;
+package metric;
 
 import com.codahale.metrics.Timer;
 import redis.clients.jedis.Jedis;

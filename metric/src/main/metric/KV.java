@@ -1,4 +1,4 @@
-package metrics;
+package metric;
 
 public class KV {
     public KV(String k, String v) {
