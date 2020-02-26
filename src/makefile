@@ -137,7 +137,7 @@ ifeq ($(uname_S),DragonFly)
 else
 	# All the other OSes (notably Linux)
 	FINAL_LDFLAGS+= -rdynamic
-	FINAL_LIBS+=-ldl -pthread -lrt
+	FINAL_LIBS+=-ldl -pthread -lrt -lstdc++fs
 endif
 endif
 endif
@@ -264,8 +264,7 @@ ifneq ($(strip $(PREV_FINAL_LDFLAGS)), $(strip $(FINAL_LDFLAGS)))
 endif
 
 rocksdbapi.o:
-	#g++ -std=c++11 -c -o rocksdbapi.o rocksdbapi.cpp -I ../deps/rocksdb/include -lstdc++fs
-	g++ -c -o rocksdbapi.o rocksdbapi.cpp -I ../deps/rocksdb/include -lstdc++fs
+	g++ -std=c++11 -c -o rocksdbapi.o rocksdbapi.cpp -I ../deps/rocksdb/include
 
 # redis-server
 $(REDIS_SERVER_NAME): $(REDIS_SERVER_OBJ) rocksdbapi.o
@@ -299,9 +298,6 @@ dict-benchmark: dict.c zmalloc.c sds.c siphash.c
 # depending on a single artifact, build all dependencies first.
 %.o: %.c .make-prerequisites
 	$(REDIS_CC) -c $<
-
-#rocksdb:
-#	cd ../deps/rocksdb && $(MAKE) static_lib
 
 clean:
 	#rm .make-settings
