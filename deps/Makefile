@@ -122,3 +122,17 @@ jemalloc: .make-prerequisites
 	cd jemalloc && $(MAKE) CFLAGS="$(JEMALLOC_CFLAGS)" LDFLAGS="$(JEMALLOC_LDFLAGS)" lib/libjemalloc.a
 
 .PHONY: jemalloc
+
+all:
+	make rocksdb
+	make zlib
+	make snappy
+	make lz4
+	make bzip2
+	make zstd
+	make hiredis
+	make linenoise
+	make lua
+	#make jemalloc
+
+.PHONY: all

@@ -43,7 +43,8 @@ MALLOC=libc
 ifneq ($(uname_M),armv6l)
 ifneq ($(uname_M),armv7l)
 ifeq ($(uname_S),Linux)
-	MALLOC=jemalloc
+	#MALLOC=jemalloc
+	MALLOC=libc
 endif
 endif
 endif
@@ -357,6 +358,7 @@ src/help.h:
 	@../utils/generate-command-help.rb > help.h
 
 install: all
+	-(cd ../deps && $(MAKE) all)
 	@mkdir -p $(INSTALL_BIN)
 	$(REDIS_INSTALL) $(REDIS_SERVER_NAME) $(INSTALL_BIN)
 	$(REDIS_INSTALL) $(REDIS_BENCHMARK_NAME) $(INSTALL_BIN)
