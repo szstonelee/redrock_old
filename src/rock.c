@@ -54,7 +54,7 @@
     #include <pthread.h>
     static pthread_spinlock_t spinLock = PTHREAD_SPINLOCK_INITIALIZER;
     #define rocklock() pthread_spin_lock(&spinLock)
-    #define rockunlock() pthread_spin_unlock(&spinlock)
+    #define rockunlock() pthread_spin_unlock(&spinLock)
 #endif
 
 #define ROCK_THREAD_MAX_SLEEP_IN_US 1024
