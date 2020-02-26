@@ -54,7 +54,7 @@
     #include <pthread.h>
     // static pthread_spinlock_t spinLock = PTHREAD_SPINLOCK_INITIALIZER;
     static pthread_spinlock_t spinLock;
-    pthread_spin_init(&spinLock, PTHREAD_PROCESS_PRIVATE);
+    pthread_spin_init(&spinLock, 0);
     #define rocklock() pthread_spin_lock(&spinLock)
     #define rockunlock() pthread_spin_unlock(&spinLock)
 #endif
