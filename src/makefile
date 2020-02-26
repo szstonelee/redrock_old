@@ -68,7 +68,8 @@ ifeq ($(USE_TCMALLOC_MINIMAL),yes)
 endif
 
 ifeq ($(USE_JEMALLOC),yes)
-	MALLOC=jemalloc
+	#MALLOC=jemalloc
+	MALLOC=libc
 endif
 
 ifeq ($(USE_JEMALLOC),no)

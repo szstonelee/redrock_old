@@ -376,8 +376,8 @@ def _test_zset():
 
 
 if __name__ == '__main__':
-    #_inc_maxmemory_with_str()
-    _check_all_key_in_str()
+    _inc_maxmemory_with_str()
+    #_check_all_key_in_str()
 
     #_test()
     #_leak()
