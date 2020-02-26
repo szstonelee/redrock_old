@@ -264,7 +264,7 @@ ifneq ($(strip $(PREV_FINAL_LDFLAGS)), $(strip $(FINAL_LDFLAGS)))
 endif
 
 rocksdbapi.o:
-	g++ -std=gnu++17 -c -o rocksdbapi.o rocksdbapi.cpp -I ../deps/rocksdb/include
+	g++ -std=c++11 -c -o rocksdbapi.o rocksdbapi.cpp -I ../deps/rocksdb/include -lstdc++fs
 
 # redis-server
 $(REDIS_SERVER_NAME): $(REDIS_SERVER_OBJ) rocksdbapi.o
