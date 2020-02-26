@@ -47,14 +47,20 @@
 
 #if defined(__APPLE__)
     #include <os/lock.h>
-    static os_unfair_lock spinLock = OS_UNFAIR_LOCK_INIT;
+    static os_unfair_lock spinLock;
+    // static os_unfair_lock spinLock = OS_UNFAIR_LOCK_INIT;
     #define rocklock() os_unfair_lock_lock(&spinLock)
     #define rockunlock() os_unfair_lock_unlock(&spinLock)
+
+    void initSpinLock() {
+        spinLock = OS_UNFAIR_LOCK_INIT;
+    }
 #else
     #include <pthread.h>
-    // static pthread_spinlock_t spinLock = PTHREAD_SPINLOCK_INITIALIZER;
     static pthread_spinlock_t spinLock;
-    pthread_spin_init(&spinLock, 0);
+    void initSpinLock() {
+        pthread_spin_init(&spinLock, 0);
+    }    
     #define rocklock() pthread_spin_lock(&spinLock)
     #define rockunlock() pthread_spin_unlock(&spinLock)
 #endif

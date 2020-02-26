@@ -88,7 +88,7 @@ void rock_test_read_rockdb(char *key);
 void rock_test_write_rockdb(char *val);
 size_t getMemoryOfRock();
 void initHotKeys();
-
+void initSpinLock();
 
 int isRockFeatureEnabled();
 

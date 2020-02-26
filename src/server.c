@@ -2906,6 +2906,7 @@ void initServer(void) {
     initZeroRockJob();
     server.rockRdbParams = NULL;
     server.inSubChildProcessState = 0;  // for Main thread(&process) always False
+    initSpinLock();
 }
 
 /* Some steps in server initialization need to be done last (after modules
