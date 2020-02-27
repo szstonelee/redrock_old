@@ -63,6 +63,10 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 
 [内存数据能备份](persistence_cn.md)
 
+# 统计和工具
+
+[一些统计用的工具](documents/stat_cn.md)
+
 # 同类产品
 
 [网上其他类似产品](peers_cn.md)

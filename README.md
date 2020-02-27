@@ -34,12 +34,13 @@ Wish you use it more and leave feedbacks at github. Thank you.
 * Support Redis Pipeline
 * Support Redis Transaction, include WATCH command
 * Support Redis Blocking
+* Support for Script/LUA is coming
 * Support subscribe/publish
 * Support original stats for Redis, plus our storage stats
 * Support slow log
 * Good for mass intensive writing to storage
 * When main load is for hot keys, performance is almost the same as Pure Redis, i.e. Million rps for one node
-* When coming to avarage random key visit pattern, performance maybe degrade by 1 maganitude order，i.e Hundreds K rps for one node
+* When coming to avarage random key visit pattern, performance maybe degrade by 1 maganitude order，i.e Hundreds Kilo rps for one node
 * Using Rocksdb library, but overload of memory in db engine is limited to tens MB
 * Keep the main logic in main thread as Redis, low level for thread switch and race risks.
 * Key/value length limit is same as Redis
@@ -51,7 +52,7 @@ Wish you use it more and leave feedbacks at github. Thank you.
 
 # How Config and Run
 
-[All config parameters of Redis, plus three added config parameter](documents/howrun_en.md)
+[All config parameters of Redis, plus three added RedRock config parameters](documents/howrun_en.md)
 
 # Supported Redis Commands
 
@@ -72,6 +73,10 @@ Wish you use it more and leave feedbacks at github. Thank you.
 # Backup and Persistence
 
 [How backup and persist the memory data with the storage data.](documents/persistence_en.md)
+
+# Stats and Tools
+
+[Some tools for stats](documents/stat_en.md)
 
 # Peers Similar Projects
 
