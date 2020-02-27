@@ -15,9 +15,10 @@ Because if no limit for memory, we do not need RedRock and its backend storage.
 It means if maxmemory==0, we disable RockRed features. 
 
 NOTE:
-1. "maxmemory" needs to be big enough to hold all keys. For example, assuming key average size is 100 bytes and you want 100 Million keys, you need setup "maxmemroy" at least 10G.
-2. "maxmemory" can not be too small, e.g. a couple of megabytes, because the space is too small for RedRock to rock. Suggest at lease 100M for "maxmemory".
-3. Do not setup "maxmemory" as much as your real machine/VM memory size because OS needs memory too. Redis do not count tempary buffer like backup for "maxmemory". You can reference：https://redis.io/topics/memory-optimization，
+1. "maxmemory" needs to be big enough to hold all keys. For example, assuming key average size is 100 bytes and you want 100 Million keys, you need setup "maxmemroy" at least 10G
+2. "maxmemory" can not be too small, e.g. a couple of megabytes, because the space is too small for RedRock to rock. Suggest at lease 100M for "maxmemory"
+3. Do not setup "maxmemory" as much as your real machine/VM memory size because OS needs memory too. Redis do not count tempary buffer like backup for "maxmemory". You can reference：https://redis.io/topics/memory-optimization
+4. When enable-rocksdb-feature is "yes", if you modify maxmemory to non-zero, by congfig-file or online changing cmd of "config set", you can not change it to zero
 
 ### enable-rocksdb-feature
 When maxmemory != 0, and enable-rocksdb-feature == yes, it means RedRock work.
@@ -33,6 +34,11 @@ NOTE:
 1. The rockdbdir folder is only for temporary usage. Every time when RedRock starts, it deletes the folder.
 2. After redis-server stop, you can not use the rockdbdir folder as a backup because it does not include the key/value in memory.
 3. If you want a real backup, please use RDB/AOF. Reference：[Backup and Persistence](persistence_en.md)
+4. You need the pemission for the folder. If you do not have the permission, RedRock will fail. You can set permission for the folder or 
+```
+sudo ./redis-server <Other parameters, you can check the example below>
+```
+You only need run sudo only once. When the folder is created, you can just run redis-server next time.
 
 ### maxmemory-only-for-rocksdb
 This parameter is optional. The default value is "yes".

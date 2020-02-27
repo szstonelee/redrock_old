@@ -14,7 +14,8 @@ Redis可以不用什么配置，命令行下简单执行./redis-server即可。
 注意：
 1. 设置的maxmemory必须保证能容纳所有的key的大小，比如key平均大小100字节，计划最大的key数量是100M，你需要maxmemroy至少10G的内存
 2. maxmemory不能故意太小，比如几兆，因为这么小的容量，RedRock工作起来会很难受，建议至少100M以上
-3. 不要maxmemory等于你的所有内存，因为OS也需要内存，Redis的内存限制是不考虑动态产生和消亡的临时工作内存，比如：备份时需要的内存。可以参考官网文档：https://redis.io/topics/memory-optimization，
+3. 不要maxmemory等于你的所有内存，因为OS也需要内存，Redis的内存限制是不考虑动态产生和消亡的临时工作内存，比如：备份时需要的内存。可以参考官网文档：https://redis.io/topics/memory-optimization
+4. 当enable-rocksdb-featurew为“yes"时，maxmemory一旦修改为0，是不允许再改回0
 
 ### enable-rocksdb-feature
 当maxmemory != 0时，这个参数设置为yes(缺省是no)，那么意味着RedRock特性起效了
@@ -25,6 +26,11 @@ Redis可以不用什么配置，命令行下简单执行./redis-server即可。
 1. rockdbdir目录只是临时使用，每次RedRock都会讲这个目录下的东西删除干净
 2. 停机后，用此目录作为备份也是不准的，因为内存的东西并不在磁盘上
 3. 如果想真正备份数据，请参考：[备份持久化](persistence_cn.md)
+4. 注意这个目录下的权限，很多时候，RedRock启动失败，是因为这个目录没有权限，你可以创立这个目录配置好权限，或者
+```
+sudo ./redis-server <其他相关参数，可以参考下面的示例>
+```
+sudo只要第一次即可，一旦目录创建成功后，未来就可以简单redis-server即可
 
 ### maxmemory-only-for-rocksdb
 这个是个可选参数，缺省值是yes
@@ -40,7 +46,6 @@ RedRock会尽量把Value存储到存储山上，腾出内存空间，但所有�
 1. 如果Redis配置的是可以删除键腾出空间，Redis将会删除一些key来腾出空间 
 参考：https://redis.io/topics/lru-cache
 2. 如果Redis配置的是不允许删除键，Redis将会拒绝服务这个命令，这个命令一般是修改型的命令，意味着Redis变成只读的
-
 
 ### 其他Redis相关参数
 参考：https://redis.io/topics/lru-cache 

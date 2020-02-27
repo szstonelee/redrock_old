@@ -2,6 +2,10 @@
 
 # Supported Features
 
+## Supported Platform
+
+I tested it on My MAC OS and Linux (which is running as VM in my Mac OS). Other platform like windows, I do not know. You can try.
+
 ## All Redis Commmands
 
 Yes. [You can click here for more reference](commands_en.md)
@@ -63,7 +67,7 @@ Yes.
 Pipeline is the key why Redis get the performance for Million rps in one machine.
 
 ## Transaction
-Yes。[More details](commands_en.md)
+Yes。Including commands like WATCH. [More details](commands_en.md)
 
 ## Blocking
 Yes。[More details](commands_en.md)

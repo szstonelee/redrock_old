@@ -43,10 +43,10 @@ metric程序的编译和执行
 ```
 cd metric
 mvn package
-java -jar target/metric-1.0.jar 2 2
+java -jar target/metric-1.0.jar 2 2000
 ```
 
-其中，第一个2，表示2 Million个key，第二个2表示两个并发线程。这个测试程序执行时间有点久，分钟级。
+其中，第一个2，表示2个线程，第二个2000，表示2000K的数据。这个测试程序执行时间有点久，分钟级。
 
 ## 测试结果
 
@@ -60,7 +60,7 @@ java -jar target/metric-1.0.jar 2 2
 ## 期待其他环境下的测试
 
 我期望看到其他测试报告，比如：
-1. Linux下
+1. 单纯的Linux(我只用Mac OS上的模拟Ubuntu测试过)，其他Unix，Windows
 2. dataset有几百G
 3. 其他更高速的SSD，如使用了Raid的SSD
 4. 其他参数配置下的RedRock，比如Replacation, Cluster下的RedRock

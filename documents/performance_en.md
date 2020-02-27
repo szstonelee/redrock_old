@@ -54,12 +54,12 @@ how metric compile and run
 ```
 cd metric
 mvn package
-java -jar target/metric-1.0.jar 2 2
+java -jar target/metric-1.0.jar 2 2000
 ```
 
 For the parameter of metric.
-First 2，meaning 2 Million keys.
-Second 2, meaning two concurrent threads.
+First parameter 2，meaning 2 concurrent threads.
+Second parameter 2000, meaning 2000K key/value pair entries.
 
 It will take a while for the test. You can have a cup of coffee.
 
@@ -74,7 +74,7 @@ As a comparsion, when I run the metric again a real redis. rps is about 60K.
 
 ## Excpect other test cases
 
-1. Linux
+1. real Linux(I only testes it Ubuntu as VM in my MAC OS), Unix, Windows
 2. dataset as large as close to 1TB
 3. more powerful SSD, SSD using Raid
 4. other situation like Redis Cluster

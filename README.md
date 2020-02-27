@@ -32,7 +32,7 @@ Wish you use it more and leave feedbacks at github. Thank you.
 * I think it would support Reids Cluster. So no need for Twemproxy and Codis
 * I think it would support distributed lock, RedLock, but I think Martin Kleppmann is right 
 * Support Redis Pipeline
-* Support Redis Transaction
+* Support Redis Transaction, include WATCH command
 * Support Redis Blocking
 * Support subscribe/publish
 * Support original stats for Redis, plus our storage stats

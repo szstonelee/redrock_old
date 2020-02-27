@@ -13,6 +13,9 @@ RedRock and all its dependencies are based on C/C++, so you need
 1. gcc/g++
 2. make/cmake
 
+In MAC, use brew. In Linux, use apt or apt-get to intall these softwares.
+
+NOTE: Right now, in Linux, it does not use Jemelloc but libc, because I have not make makefile fit for Jemalloc.
 
 ## Setup
 

@@ -2,6 +2,10 @@
 
 # 支持的特性
 
+## 支持的平台
+
+MAC OS和Linux(我在Mac上通过VM模拟的Linux)应该可以。其他我不是太清楚。
+
 ## 支持所有的Redis Commmands
 
 Yes. [你可以参考命令集和注意事项](commands_cn.md)
@@ -58,7 +62,7 @@ antirez: http://antirez.com/news/101
 Yes。Pipeline也是单台机器的Redis的Performance能达到Million rps级别的关键原因。
 
 ## 支持Transaction
-Yes。[需要留意一个细节](commands_cn.md)
+Yes。包括Watch这样的命令。[需要留意一个细节](commands_cn.md)
 
 ## 支持Blocking
 Yes。[需要留意一个细节](commands_cn.md)

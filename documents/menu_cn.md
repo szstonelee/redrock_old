@@ -23,7 +23,7 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 * 我认为应该支持分区集群，Redis Cluster. 如果这样，就不需要Twemproxy或者Codis
 * 我认为应该支持Redis的分布锁，但我支持Martin Kleppmann关于Redis分布锁的看法 
 * 支持管道Pipeline处理
-* 支持事务Transaction
+* 支持事务Transaction，Watch命令也支持
 * 支持阻塞操作Blocking
 * 支持订阅/发布Publication/Subscribe
 * 支持原有的所有统计，同时有自己的统计

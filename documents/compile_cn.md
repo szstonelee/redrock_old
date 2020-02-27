@@ -6,6 +6,10 @@
 
 本工程基于C/C++，你需要有gcc/g++，并能支持make/cmake
 
+在MAC下，参考brew，在Linux下，参考apt或apt-get
+
+NOTE: Linux下，当前还不是用Jemalloc，暂时还是用libc，因为我还没有改好makefile
+
 ## 下载和编译
 
 从GitHub下载本工程后
@@ -17,7 +21,7 @@ git submodule update
 cd src
 make
 ```
-如果成功，会在编译目录redrock/src下看到redis-server这个文件
+如果成功，会在编译目录redrock/src下看到redis-server这个文件。是的，RedRock缺省执行文件就是redis一样
 ```
 ls -all redis-server
 ```
