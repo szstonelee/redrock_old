@@ -12,6 +12,8 @@
 ```
 git clone https://github.com/szstonelee/redrock redrock
 cd redrock
+git submodule init
+git submodule update
 cd src
 make
 ```

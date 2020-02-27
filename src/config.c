@@ -599,6 +599,16 @@ void configSetCommand(client *c) {
         if(config->modifiable && (!strcasecmp(c->argv[2]->ptr,config->name) ||
             (config->alias && !strcasecmp(c->argv[2]->ptr,config->alias))))
         {
+            if (strcasecmp(config->name, "maxmemory") == 0 && server.enable_rocksdb_feature) {
+                // for maxmemory, if set maxmemory and rock feature enable, 
+                // we can not set it back to zero
+                long long maxmemory_check_zero;
+                if (getLongLongFromObject(o, &maxmemory_check_zero) == C_OK && maxmemory_check_zero == 0) {
+                    addReplyBulkCString(c, "we can not set maxmemory to zero when enable rocksdb feature!");
+                    return;
+                }
+            }
+
             if (!config->interface.set(config->data,o->ptr, &errstr)) {
                 goto badfmt;
             }

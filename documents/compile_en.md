@@ -16,12 +16,14 @@ RedRock and all its dependencies are based on C/C++, so you need
 
 ## Setup
 
-Clone RedRock from github, then make.
+Clone RedRock from github, download submodule Rocksdb, then make.
 ```
 git clone https://github.com/szstonelee/redrock redrock
 cd redrock
+git submodule init
+git submodule update
 cd src
-make
+make all
 ```
 If no error shows, you will see an execute file named as redis-server in redrock/src folder.
 ```

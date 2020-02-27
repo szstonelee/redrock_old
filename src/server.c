@@ -1004,6 +1004,10 @@ struct redisCommand redisCommandTable[] = {
 
     {"acl",aclCommand,-2,
      "admin no-script no-slowlog ok-loading ok-stale",
+     0,NULL,0,0,0,0,0,0,NULL},
+
+    {"rock",rockCommand,-2,
+     "read-only fast @connection",
      0,NULL,0,0,0,0,0,0,NULL}
 };
 
@@ -2902,11 +2906,11 @@ void initServer(void) {
     slowlogInit();
     latencyMonitorInit();
 
+    initSpinLock();
     initRockPipe();     /* init rock pipe and start the rock thread */
     initZeroRockJob();
     server.rockRdbParams = NULL;
     server.inSubChildProcessState = 0;  // for Main thread(&process) always False
-    initSpinLock();
 }
 
 /* Some steps in server initialization need to be done last (after modules
@@ -3753,40 +3757,6 @@ void pingCommand(client *c) {
 }
 
 void echoCommand(client *c) {
-    char *echoStr = c->argv[1]->ptr;
-    if (strcmp(echoStr, "print") == 0) {
-        rock_print_debug();
-    } else if (strcmp(echoStr, "resume") == 0) {
-        rock_test_resume_rock();
-    } else if (strcmp(echoStr, "keyreport") == 0) {
-        rock_debug_print_key_report();
-    } else if (strlen(echoStr) > 7 && memcmp(echoStr, "setrock", 7) == 0) {
-        rock_test_set_rock_key(echoStr+7);
-    } else if (strlen(echoStr) > 7 && memcmp(echoStr, "addwork", 7) == 0) {
-        test_add_work_key(0, echoStr+7, strlen(echoStr)-7);
-    } else if (strcmp(echoStr, "testserdesstr") == 0) {
-        _test_ser_des_string();
-    } else if (strcmp(echoStr, "testserdeslist") == 0) {
-        _test_ser_des_list();
-    } else if (strcmp(echoStr, "testserdesset") == 0) {
-        _test_ser_des_set();
-    } else if (strcmp(echoStr, "testserdeshash") == 0) {
-        _test_ser_des_hash();
-    } else if (strcmp(echoStr, "testserdeszset") == 0) {
-        _test_ser_des_zset();
-    } else if (strcmp(echoStr, "testopendb") == 0) {
-        init_rocksdb(server.dbnum, "/opt/test/");
-    } else if (strlen(echoStr) > 8 && memcmp(echoStr, "readrock", 8) == 0) {
-        rock_test_read_rockdb(echoStr+8);
-    } else if (strlen(echoStr) > 9 && memcmp(echoStr, "writerock", 9) == 0) {
-        rock_test_write_rockdb(echoStr+9);
-    } else if (strcmp(echoStr, "rockmem") == 0) {
-        size_t mem_usage = getMemoryOfRock();
-        serverLog(LL_NOTICE, "rock mem usage = %lu", mem_usage);
-    } else if (strcmp(echoStr, "testrdbservice") == 0) {
-        _test_rdb_service();
-    }
-
     addReplyBulk(c,c->argv[1]);
 }
 

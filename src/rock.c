@@ -71,6 +71,112 @@
 #define SAFE_MEMORY_ROCK_BEFORE_EVIC    (32<<20) 
 #define MAX_TRY_PICK_KEY_TIMES 64
 
+void _rock_debug_print_key_report() {
+    dictEntry *de;
+    dictIterator *di;
+
+    long long all_total = 0;
+    for (int i = 0; i < server.dbnum; ++i) {
+        long total = 0, rock = 0;
+        di = dictGetIterator(server.db[i].dict);
+        int print_one_key = 0;
+        while ((de = dictNext(di))) {
+            ++total;
+            robj *o = dictGetVal(de);
+            if (o == shared.valueInRock) {
+                ++rock;
+                if (!print_one_key) {
+                    sds key = dictGetKey(de);
+                    print_one_key = 1;
+                    serverLog(LL_NOTICE, "db=%d, one rock key = %s", i, key);
+                }
+                sds key = dictGetKey(de);
+                dictEntry *check = dictFind(server.db[i].hotKeys, key);
+                if (check != NULL) 
+                    serverLog(LL_NOTICE, "something wrong, rock key in hotKeys! key = %s", key);
+            } 
+        }
+
+        dictReleaseIterator(di);
+        all_total += total;
+        if (total) {
+            int rockPercent = rock * 100 / total;
+            serverLog(LL_NOTICE, "db=%d, key total = %ld, value in rock = %ld, rock percentage = %d%%, hot key = %lu", 
+                i, total, rock, rockPercent, dictSize(server.db[i].hotKeys));
+        }
+    }
+    serverLog(LL_NOTICE, "all db key total = %lld", all_total);
+}
+
+void _print_rock_key(long limit) {
+    dictEntry *de;
+    dictIterator *di;
+
+    long long count = 0;
+    for (int i = 0; i < server.dbnum; ++i) {
+        long long db_count = 0;
+        di = dictGetIterator(server.db[i].dict);
+        while ((de = dictNext(di))) {
+            robj *o = dictGetVal(de);
+            if (o == shared.valueInRock) {
+                serverLog(LL_NOTICE, "%s", dictGetKey(de));
+                ++count;
+                ++db_count;
+                if (count >= limit) break;
+            }
+        }
+        dictReleaseIterator(di);
+        if (db_count)
+            serverLog(LL_NOTICE, "the above rock key belongs to dbid = %d, total = %lld", i, db_count);
+    }
+}
+
+void rockCommand(client *c) {
+    serverLog(LL_NOTICE, "rock command!");
+
+    char *echoStr = c->argv[1]->ptr;
+    if (strcmp(echoStr, "print") == 0) {
+        rock_print_debug();
+    } else if (strcmp(echoStr, "resume") == 0) {
+        rock_test_resume_rock();
+    } else if (strcmp(echoStr, "keyreport") == 0) {
+        _rock_debug_print_key_report();
+    } else if (strlen(echoStr) > 7 && memcmp(echoStr, "setrock", 7) == 0) {
+        rock_test_set_rock_key(echoStr+7);
+    } else if (strlen(echoStr) > 7 && memcmp(echoStr, "addwork", 7) == 0) {
+        test_add_work_key(0, echoStr+7, strlen(echoStr)-7);
+    } else if (strcmp(echoStr, "testserdesstr") == 0) {
+        _test_ser_des_string();
+    } else if (strcmp(echoStr, "testserdeslist") == 0) {
+        _test_ser_des_list();
+    } else if (strcmp(echoStr, "testserdesset") == 0) {
+        _test_ser_des_set();
+    } else if (strcmp(echoStr, "testserdeshash") == 0) {
+        _test_ser_des_hash();
+    } else if (strcmp(echoStr, "testserdeszset") == 0) {
+        _test_ser_des_zset();
+    } else if (strcmp(echoStr, "testopendb") == 0) {
+        init_rocksdb(server.dbnum, "/opt/test/");
+    } else if (strlen(echoStr) > 8 && memcmp(echoStr, "readrock", 8) == 0) {
+        rock_test_read_rockdb(echoStr+8);
+    } else if (strlen(echoStr) > 9 && memcmp(echoStr, "writerock", 9) == 0) {
+        rock_test_write_rockdb(echoStr+9);
+    } else if (strcmp(echoStr, "rockmem") == 0) {
+        size_t mem_usage = getMemoryOfRock();
+        serverLog(LL_NOTICE, "rock mem usage = %lu", mem_usage);
+    } else if (strcmp(echoStr, "testrdbservice") == 0) {
+        _test_rdb_service();
+    } else if (strcmp(echoStr, "rockkey") == 0) {
+        long long keyLimit = 0;
+        if (c->argc > 2) 
+            getLongLongFromObject(c->argv[2], &keyLimit);
+        if (keyLimit <= 0) keyLimit = 1;
+        _print_rock_key(keyLimit);
+    }
+
+    addReplyBulk(c,c->argv[1]);
+}
+
 /* check whether the config is enabled 
  * NOTE: we set these config parameter is mutable, but actually it can not be changed online 
  * return 1 if enabled, otherwise 0*/
@@ -80,7 +186,6 @@ int isRockFeatureEnabled() {
     else
         return 0;
 }
-
 
 /* please reference EVPOOL_SIZE, EVPOOL_CACHED_SDS_SIZE */
 #define RKPOOL_SIZE 16
@@ -353,6 +458,7 @@ void initZeroRockJob() {
     server.rockJob.workKey = NULL;
     server.rockJob.returnKey = NULL;
     server.rockJob.valInRock = NULL;
+    server.rockJob.alreadyFinishedByScript = 0;
     rockunlock();
 }
 
@@ -420,7 +526,7 @@ void _clearFinishKey(int dbid, sds key, robj *val) {
     if (entry && dictGetVal(entry) == shared.valueInRock) {
         dictSetVal(server.db[dbid].dict, entry, val);
         /* afer restore the real value, we need add it to hotKey 
-         * NOTE: do not use key, use dictGetKey(entry) */
+         * NOTE: do not use key because it may be freed later by the caller, use dictGetKey(entry) */
         int ret = dictAdd(server.db[dbid].hotKeys, dictGetKey(entry), NULL);        
         serverAssert(ret == DICT_OK);
     } // else due to deleted, updated or flushed
@@ -452,6 +558,217 @@ void _clearFinishKey(int dbid, sds key, robj *val) {
    listRelease(zeroClients);
 }
 
+int _isAlreadyInScriptNeedFinishKeys(list *l, scriptMaybeKey *maybeKey) {
+    serverAssert(maybeKey != NULL);
+
+    listIter li;
+    listNode *ln;
+
+    listRewind(l, &li);
+    while((ln = listNext(&li))) {
+        scriptMaybeKey *check = listNodeValue(ln);
+        serverAssert(check);
+        if (check->dbid == maybeKey->dbid && sdscmp(check->key, maybeKey->key) == 0) 
+            return 1;
+    }
+
+    return 0;
+}
+
+/* when script finished, we need to scan the maybe-finished key, which is restore from rocksdb,
+ * 'maybe' because for one command in script, the key is restored, but after that(by the command or other command followed it), 
+ * the key maybe flushed to rocksdb again. So we need to check it again. And there maybe duplicated keys
+ * so we need to remove the duplicated key because we can only resume the client once */
+void _clearMaybeFinishKeyFromScript(list *maybeKeys) {
+    listIter li;
+    listNode *ln;
+
+    list *needFishishKeys = listCreate();
+
+    listRewind(maybeKeys, &li);
+    while((ln = listNext(&li))) {
+        scriptMaybeKey *maybeKey = listNodeValue(ln);
+        sds key = maybeKey->key;
+        int dbid = maybeKey->dbid;
+
+        dictEntry *entry = dictFind(server.db[dbid].dict, key);
+        if (!entry || dictGetVal(entry) != shared.valueInRock) {
+            // the key has been deleted or the value of the key not be dumped, so it need to be cleared
+            if (!_isAlreadyInScriptNeedFinishKeys(needFishishKeys, maybeKey))   // no duplication 
+                listAddNodeTail(needFishishKeys, maybeKey); 
+        } 
+    }
+
+    list *zeroClients = listCreate();
+    listRewind(needFishishKeys, &li);
+    while((ln = listNext(&li))) {
+        scriptMaybeKey *scriptKey = listNodeValue(ln);
+        sds key = scriptKey->key;
+        int dbid = scriptKey->dbid;
+        list *clients =  dictFetchValue(server.db[dbid].rockKeys, key);
+        if (clients) {
+            listIter cli;
+            listNode *cln;
+            listRewind(clients, &cli);
+            while((cln = listNext(&cli))) {
+                client *c = listNodeValue(cln);
+                serverAssert(c && c->rockKeyNumber > 0);
+                --c->rockKeyNumber;
+                if (c->rockKeyNumber == 0)
+                    listAddNodeTail(zeroClients, c);
+            }
+            // we need to check the rockJob for concurrency consideration
+            rocklock();
+            if (server.rockJob.dbid == dbid) {
+                if (server.rockJob.workKey) {
+                    if (sdscmp(server.rockJob.workKey, key) == 0) {
+                        // workKey maybe is processed in the rockThread
+                        // we need to set the alreadyFinishedByScript
+                        serverAssert(server.rockJob.alreadyFinishedByScript == 0);
+                        server.rockJob.alreadyFinishedByScript = 1;
+                    }
+                } else if (server.rockJob.returnKey) {
+                    if (sdscmp(server.rockJob.returnKey, key) == 0) {
+                        // returnKey will be processed by the main thread in future
+                        // we need to set the alreadyFinishedByScript
+                        serverAssert(server.rockJob.alreadyFinishedByScript == 0);
+                        server.rockJob.alreadyFinishedByScript = 1;
+                    }
+                }
+            }
+            rockunlock();
+        }
+        /* delete the entry in rockKeys, NOTE: the key maybe NOTin rockKeys, different from  _clearFinishKey() */
+        dictDelete(server.db[dbid].rockKeys, key);
+    }
+
+    /* try resume the zeroClients */
+    listRewind(zeroClients, &li);
+    while((ln = listNext(&li))) {
+        client *c = listNodeValue(ln);
+        checkThenResumeRockClient(c);
+    }
+
+    // because list->free is NULL, the node->val is cleared by the caller
+    listRelease(needFishishKeys);
+    listRelease(zeroClients);   
+}
+
+void _freeMaybeKey(void *maybeKey) {
+    sdsfree(((scriptMaybeKey*)maybeKey)->key);  // because the key is duplicated from
+    zfree(maybeKey);
+}
+
+void _checkRockForSingleCmd(client *c, list *l) {
+    if (c->cmd->checkRockProc) 
+        c->cmd->checkRockProc(c, c->cmd, c->argv, c->argc, l);
+}
+
+void _checkRockForMultiCmd(client *c, list *l) {
+    for (int j = 0; j < c->mstate.count; ++j) {
+        if (c->mstate.commands[j].cmd->checkRockProc) 
+            c->mstate.commands[j].cmd->checkRockProc(
+                c, c->mstate.commands[j].cmd, 
+                c->mstate.commands[j].argv, c->mstate.commands[j].argc, l);
+    }
+}
+
+void _restore_obj_from_rocksdb(int dbid, sds key, robj **val, int fromMainThread) {
+    void *val_db_ptr;
+    size_t val_db_len;
+
+    rocksdbapi_read(dbid, key, sdslen(key), &val_db_ptr, &val_db_len);
+
+    if (val_db_ptr == NULL) {
+        if (!fromMainThread) {
+            serverLog(LL_NOTICE, "_doRockJobInRockThread() get null, key = %s", key);
+            *val = NULL;
+            return;
+        } else {
+            serverPanic("read null from rocksdb in maintThread");   // main thread call can not read null
+            *val = NULL;
+            return;
+        }
+    }
+    
+    // robj *o = desString(val_db_ptr, val_db_len);
+    robj *o = desObject(val_db_ptr, val_db_len);
+    serverAssert(o);
+
+    // we need to free the memory allocated by rocksdbapi
+    zfree(val_db_ptr);
+
+    *val = o;   
+}
+
+void _doRockJobInRockThread(int dbid, sds key, robj **val) {
+    _restore_obj_from_rocksdb(dbid, key, val, 0);
+}
+
+/* because script call */
+void _doRockRestoreInMainThread(int dbid, sds key, robj **val) {
+    _restore_obj_from_rocksdb(dbid, key, val, 1);
+}
+
+// GLOBAL variable for script maybeFinishKey list
+static list *g_maybeFinishKeys = NULL;
+
+void scriptWhenStart() {
+    serverAssert(g_maybeFinishKeys == NULL);
+    g_maybeFinishKeys = listCreate();
+    g_maybeFinishKeys->free = _freeMaybeKey;  // free each key in scirptForBeforeExit()
+}
+
+/* every redis call in script, need to check the key in Rocksdb, if value in rocksdb
+ * we need restore it in main thread, and add the key to g_maybeKeys */
+void scriptForBeforeEachCall(client *c) {
+    int dbid = c->db->id;
+    serverAssert(c);
+    serverAssert(c->rockKeyNumber == 0);
+
+    list *valueInRockKeys;  /* list of sds keys */
+
+    valueInRockKeys = listCreate();
+
+    /* 1. check whether there are any key's value in Rocksdb */
+    if (c->flags & CLIENT_MULTI) 
+        _checkRockForMultiCmd(c, valueInRockKeys);
+    else 
+        _checkRockForSingleCmd(c, valueInRockKeys);
+
+    listIter li;
+    listNode *ln;
+    listRewind(valueInRockKeys, &li);
+    while((ln = listNext(&li))) {
+        sds key = listNodeValue(ln);
+
+        // load the value from Rocksdb in main thread in sync mode, 
+        // NOTE: maybe duplicated (i.e the value maybe restored by the previous restore, but it does no matter
+        robj *valInRock;
+        _doRockRestoreInMainThread(dbid, key, &valInRock);
+        dictEntry *de = dictFind(c->db->dict, key);
+        robj *checkValue = dictGetVal(de);
+        if (checkValue == shared.valueInRock)
+            dictSetVal(server.db[dbid].dict, de, valInRock);
+        else
+            decrRefCount(valInRock);          
+
+        scriptMaybeKey *maybeFinishKey = zmalloc(sizeof(scriptMaybeKey));
+        maybeFinishKey->dbid = dbid;
+        sds copy = sdsdup(key);
+        maybeFinishKey->key = copy;
+        listAddNodeTail(g_maybeFinishKeys, maybeFinishKey);
+    }
+
+    listRelease(valueInRockKeys);
+}
+
+void scirptForBeforeExit() {
+    _clearMaybeFinishKeyFromScript(g_maybeFinishKeys);
+    listRelease(g_maybeFinishKeys);
+    g_maybeFinishKeys = NULL;   // ready for next script
+}
+
 /* the event handler is executed from main thread, which is signaled by the pipe
  * from the rockdb thread. When it is called by the eventloop, there is 
  * a return result in rockJob */
@@ -463,6 +780,7 @@ void _rockPipeReadHandler(struct aeEventLoop *eventLoop, int fd, void *clientDat
     int finishDbid;
     sds finishKey;
     robj *val;
+    int alreadyFininshedByScript;
 
     /* deal with return result */
     rocklock();
@@ -473,9 +791,12 @@ void _rockPipeReadHandler(struct aeEventLoop *eventLoop, int fd, void *clientDat
     finishDbid = server.rockJob.dbid;
     finishKey = server.rockJob.returnKey;
     val = server.rockJob.valInRock;
+    alreadyFininshedByScript = server.rockJob.alreadyFinishedByScript;
     rockunlock();
 
-    _clearFinishKey(finishDbid, finishKey, val);
+    if (!alreadyFininshedByScript)
+        // if the job has already finished by script, we do not need to clear finish key
+        _clearFinishKey(finishDbid, finishKey, val);
 
     int moreJobDbid;
     sds moreJobKey;
@@ -486,28 +807,6 @@ void _rockPipeReadHandler(struct aeEventLoop *eventLoop, int fd, void *clientDat
 
     char tmpUseBuf[1];
     read(fd, tmpUseBuf, 1);     /* maybe unblock the rockdb thread by read the pipe */    
-}
-
-void _doRockJobInRockThread(int dbid, sds key, robj **val) {
-    void *val_db_ptr;
-    size_t val_db_len;
-
-    rocksdbapi_read(dbid, key, sdslen(key), &val_db_ptr, &val_db_len);
-
-    if (val_db_ptr == NULL) {
-        serverLog(LL_NOTICE, "_doRockJobInRockThread() get null, key = %s", key);
-        *val = NULL;
-        return;
-    }
-    
-    // robj *o = desString(val_db_ptr, val_db_len);
-    robj *o = desObject(val_db_ptr, val_db_len);
-    serverAssert(o);
-
-    // we need to free the memory allocated by rocksdbapi
-    zfree(val_db_ptr);
-
-    *val = o;   
 }
 
 /* for rdb backup  */
@@ -602,20 +901,6 @@ void initRockPipe() {
 
     if (pthread_create(&rockdb_thread, NULL, _mainProcessInRockThread, NULL) != 0) {
         serverPanic("Unable to create a rock thread.");
-    }
-}
-
-void _checkRockForSingleCmd(client *c, list *l) {
-    if (c->cmd->checkRockProc) 
-        c->cmd->checkRockProc(c, c->cmd, c->argv, c->argc, l);
-}
-
-void _checkRockForMultiCmd(client *c, list *l) {
-    for (int j = 0; j < c->mstate.count; ++j) {
-        if (c->mstate.commands[j].cmd->checkRockProc) 
-            c->mstate.commands[j].cmd->checkRockProc(
-                c, c->mstate.commands[j].cmd, 
-                c->mstate.commands[j].argv, c->mstate.commands[j].argc, l);
     }
 }
 
@@ -736,40 +1021,8 @@ void rock_print_debug() {
     listReleaseIterator(it);
 }
 
-void rock_debug_print_key_report() {
-    dictEntry *de;
-    dictIterator *di;
 
-    long long all_total = 0;
-    for (int i = 0; i < server.dbnum; ++i) {
-        long total = 0, rock = 0;
-        di = dictGetIterator(server.db[i].dict);
-        int print_one_key = 0;
-        while ((de = dictNext(di))) {
-            ++total;
-            robj *o = dictGetVal(de);
-            if (o == shared.valueInRock) {
-                ++rock;
-                if (!print_one_key) {
-                    sds key = dictGetKey(de);
-                    print_one_key = 1;
-                    serverLog(LL_NOTICE, "db=%d, one rock key = %s", i, key);
-                }
-                sds key = dictGetKey(de);
-                dictEntry *check = dictFind(server.db[i].hotKeys, key);
-                if (check != NULL) 
-                    serverLog(LL_NOTICE, "something wrong, rock key in hotKeys! key = %s", key);
-            } 
-        }
 
-        dictReleaseIterator(di);
-        all_total += total;
-        if (total)
-            serverLog(LL_NOTICE, "db=%d, key total = %ld, value in rock = %ld, hot key = %lu", 
-                i, total, rock, dictSize(server.db[i].hotKeys));
-    }
-    serverLog(LL_NOTICE, "all db key total = %lld", all_total);
-}
 
 void rock_test_resume_rock() {
     listIter *it = listGetIterator(server.clients, AL_START_HEAD);

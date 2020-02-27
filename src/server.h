@@ -1017,6 +1017,7 @@ typedef struct RockJob {
     sds workKey;
     sds returnKey;
     robj *valInRock;
+    int alreadyFinishedByScript;
 } RockJob;
 
 struct redisServer {
@@ -2367,6 +2368,7 @@ void xdelCommand(client *c);
 void xtrimCommand(client *c);
 void lolwutCommand(client *c);
 void aclCommand(client *c);
+void rockCommand(client *c);
 
 #if defined(__GNUC__)
 void *calloc(size_t count, size_t size) __attribute__ ((deprecated));

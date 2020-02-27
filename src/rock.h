@@ -64,10 +64,14 @@
 #define ROCK_TYPE_HASH_ZIPLIST  13
 #define ROCK_TYPE_LIST_QUICKLIST 14
 
+typedef struct scriptMaybeKey {
+    sds key;
+    int dbid;
+} scriptMaybeKey;
 
 /* API */
 void rock_print_debug();
-void rock_debug_print_key_report();
+// void rock_debug_print_key_report();
 void rock_test_resume_rock();
 void rock_test_set_rock_key(char *keyStr);
 void checkCallValueInRock(client *c);

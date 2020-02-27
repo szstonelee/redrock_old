@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 public class MainApp {
     static MetricRegistry metrics = new MetricRegistry();
 
-    private static int KV_TOTAL = 1<<20;
+    private static int KV_TOTAL = 1<<10;
     private static int QUEUE_LEN =  KV_TOTAL>>2;
     private static int THREAD_NUMBER = 2;
 
@@ -99,7 +99,7 @@ public class MainApp {
         }
         if (args.length >= 2) {
             int total = Integer.parseInt(args[1]);
-            KV_TOTAL = total<<20;
+            KV_TOTAL = total<<10;
             QUEUE_LEN = KV_TOTAL>>2;
         }
 
