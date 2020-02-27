@@ -105,7 +105,7 @@ Please reference：https://redis.io/topics/faq#what-happens-if-redis-runs-out-of
 
 2. In the above situation, can we use SSD as OS swap file because SSD is pretty faster than HDD?
 
-The answer is simiplly NO. Please reference an article from Redis author antierz. [《Redis with an SSD swap, not what you want》](http://antirez.com/news/52)
+The answer is simiplly NO. Please reference an article from Redis author antierz. [Redis with an SSD swap, not what you want](http://antirez.com/news/52)
 
 3. If we enable maxmemory, but do not enable enable-rocksdb-feature, what will happen? 
 

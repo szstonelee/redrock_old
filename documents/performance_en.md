@@ -27,14 +27,13 @@ If 99.99999% miss in memory, what is my real system performance?
 
 ## Test Enviroment
 
-1. We hope most key's value in disk, at least 90%.
-2. We hope visit is randomly for all keys. No hot key.
+1. We hope most key's value in disk, at least 90%. (I tested in 95%)
+2. We hope visits are random for all keys. No hot key for relative longer time.
 3. Page cache for OS can not be high. Otherwise, reading from disk is actually reading from memory.
 4. Key is small than value. Key size random from 20 to 200 bytes. Value size random from 200 to 2000 bytes.
 5. Does not consider short connection. 
 6. From my specific Mac, I set maxmemory of 500M for my test.
-
-My Mac 16G DDR memory, 4 Core 2.2GHz Intel i7, 250G PCI SSD.
+7. My Mac 16G DDR memory, 4 Core 2.2GHz Intel i7, 250G PCI SSD.
 
 ## Compile Metric Program
 
@@ -74,8 +73,8 @@ As a comparsion, when I run the metric again a real redis. rps is about 60K.
 
 ## Excpect other test cases
 
-1. real Linux(I only testes it Ubuntu as VM in my MAC OS), Unix, Windows
+1. real Linux (I only tested performance in my MAC OS), Unix, Windows
 2. dataset as large as close to 1TB
-3. more powerful SSD, SSD using Raid
-4. other situation like Redis Cluster
-5. big value like MB value or mix with KB value
+3. more powerful SSD, like SSD using Raid
+4. other situations like Redis Cluster
+5. big values like MB value or mix with KB value
