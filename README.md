@@ -17,7 +17,7 @@ I wish one stone to hit two birds.
 NOTE: 
 I only code the project for a couple of months and only use my off-busy-work time. 
 It is not as mature as a project for ten years. 
-Wish you use it more and leave feedbacks at github. Thank you.
+Wish you use it more and leave feedbacks at Github. Thank you.
 
 ## RedRock Features
 * Pure Redis. When not enable storage, RedRock is running almost the same codes as Redis

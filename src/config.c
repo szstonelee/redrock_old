@@ -2193,7 +2193,7 @@ standardConfig configs[] = {
     createStringConfig("dbfilename", NULL, MODIFIABLE_CONFIG, ALLOW_EMPTY_STRING, server.rdb_filename, "dump.rdb", isValidDBfilename, NULL),
     createStringConfig("appendfilename", NULL, IMMUTABLE_CONFIG, ALLOW_EMPTY_STRING, server.aof_filename, "appendonly.aof", isValidAOFfilename, NULL),
 
-    createStringConfig("rockdbdir", NULL, IMMUTABLE_CONFIG, EMPTY_STRING_IS_NULL, server.rockdb_dir, "/opt/redrock/", NULL, NULL),
+    createStringConfig("rockdbdir", NULL, IMMUTABLE_CONFIG, EMPTY_STRING_IS_NULL, server.rockdb_dir, "/opt/redrock_rocksdb/", NULL, NULL),
 
     /* Enum Configs */
     createEnumConfig("supervised", NULL, IMMUTABLE_CONFIG, supervised_mode_enum, server.supervised_mode, SUPERVISED_NONE, NULL, NULL),

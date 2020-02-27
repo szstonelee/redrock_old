@@ -5113,7 +5113,7 @@ int main(int argc, char **argv) {
         serverLog(LL_WARNING,"WARNING: You specified a maxmemory value that is less than 1MB (current value is %llu bytes). Are you sure this is what you really want?", server.maxmemory);
     }
 
-    if (isRockFeatureEnabled()) {
+    if (server.enable_rocksdb_feature) {
         if (init_rocksdb(server.dbnum, server.rockdb_dir) == -1) {
             serverLog(LL_WARNING, "init rocksdb failed!");
             exit(1);
@@ -5125,7 +5125,7 @@ int main(int argc, char **argv) {
     aeMain(server.el);
     aeDeleteEventLoop(server.el);
 
-    if (isRockFeatureEnabled())
+    if (server.enable_rocksdb_feature)
         teardown_rocksdb();
 
     return 0;

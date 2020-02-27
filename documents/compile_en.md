@@ -35,8 +35,8 @@ You can go on to try it.
 Use client tools like redis-cli, and test the basic commands like set/get.
 
 ## Compile Options
-### From the Bottom including every library
-If you want everything new from beginning, including compiling each base library like Rocksdb, Snapy, Jemalloc
+### From the bottom including every library
+If you want everything new from beginning, including compiling each base library like Rocksdb, Snapy
 ```
 cd src
 make distclean
@@ -55,7 +55,7 @@ make clean
 make
 ```
 ### Quickest Compile
-Most of times, when you changed just one source file, the quickest way to compile is: 
+Most of times, when you change just one source file, the quickest way to compile is: 
 ```
 make
 ```
