@@ -87,3 +87,8 @@ Yes.
 另外一个Pita，我没有看细节，但其机理应该是SSDB，所以有同样的怀疑。
 [详细参考这里](peers_cn.md)
 
+## 暂不支持的功能
+
+暂不支持Redis的Module功能，[点这里去官网了解更多](https://redis.io/topics/modules-api-ref)。
+
+不支持的原因很简单，我没有看到过多这样的需求，暂不准备投入时间处理这个特性。

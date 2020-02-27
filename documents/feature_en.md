@@ -94,3 +94,8 @@ When you caome to SSDB, a similiar product, it has the limit of key length as it
 For Pita，I do not check the detail. But it is based on SSDB. So I doubt it.
 [More details](peers_cn.md)
 
+## Temprorary Not Supported Feature
+
+Right now, I have not supported Redis Module. [Click to Redis website to know more about Redis Module](https://redis.io/topics/modules-api-ref)。
+
+I have not seen too much use cases about Redis Module. I want to save my time for it. Sorry.

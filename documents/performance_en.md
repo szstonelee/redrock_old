@@ -18,12 +18,12 @@ But for our software engineer, we also have pressure to lie or only show good me
 
 For sell our software, for self-own fame online, or for promotion. Who knows?
 
-If in a best situation, 99.99999% key visits hit the memory, and even as 99.99999% keys' value in disk,
-I could say RedRock is just as fast as Redis (because it is a Redis user case!!!) 
+If in a best situation of 99.99999% key/value visits hitting the memory, even with 99.99999% keys' value in disk,
+I could say RedRock is just as fast as Redis (because it is nearly a Redis user case!!!) 
 
-But it does not make sense. We need to consider the bad situation.
+But it does not make sense. We need to consider the bad or worst situation.
 
-If 99.99999% miss, what is my system performance?
+If 99.99999% miss in memory, what is my real system performance?
 
 ## Test Enviroment
 
@@ -34,7 +34,7 @@ If 99.99999% miss, what is my system performance?
 5. Does not consider short connection. 
 6. From my specific Mac, I set maxmemory of 500M for my test.
 
-My Mac 16G DDR3 memory, 4 Core 2.2GHz Intel i7, 250G PCI SSD.
+My Mac 16G DDR memory, 4 Core 2.2GHz Intel i7, 250G PCI SSD.
 
 ## Compile Metric Program
 
