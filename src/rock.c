@@ -68,18 +68,56 @@
 #define ROCK_THREAD_MAX_SLEEP_IN_US 1024
 
 /* safe space assume to be 32M before eviction */
-#define SAFE_MEMORY_ROCK_BEFORE_EVIC    (32<<20) 
+#define SAFE_MEMORY_ROCK_BEFORE_EVIC    (16<<20) 
 #define MAX_TRY_PICK_KEY_TIMES 64
+
+
+/* called from db.c. When key inserted, updated, delete, it may be needed 
+ * to adjust the hotKey. val maybe null, if null, we need read it from db */
+void addHotKeyIfNeed(redisDb *db, sds key, robj *val, int from_init) {
+    if (!from_init && dictSize(db->hotKeys) == 0)
+        return;     // meaning we do not enable hotKey, we only use the check for not init (db.c)
+
+    if (val == NULL) {
+        dictEntry *de = dictFind(db->dict, key);
+        if (de == NULL) {
+            serverLog(LL_WARNING, "addHotKeyIfNeed(), de null for key = %s", key);
+            return;
+        }
+        val = dictGetVal(de);
+    }
+
+    if (val == shared.valueInRock) {
+        serverLog(LL_WARNING, "addHotKeyIfNeed() add key's value already in Rocksdb, %s", key);
+        return;      // if value already in Rocksdb, no need
+    }
+
+    if (val->type == OBJ_STREAM || val->refcount == OBJ_SHARED_REFCOUNT) {
+        dictDelete(db->hotKeys, key);   // because may be overwrite
+        return;   // we do not dump stream to Rocksdb
+    }
+
+    int ret = dictAdd(db->hotKeys, key, NULL);
+    serverAssert(ret == DICT_OK);       // we think the key never exist before, otherwise it is a bug
+}
+
+void deleteHotKeyIfNeed(redisDb *db, sds key) {
+    if (dictSize(db->hotKeys) == 0) return;     // hotKey not enable
+    dictDelete(db->hotKeys, key);       // key may be in hotKeys
+}
 
 void _rock_debug_print_key_report() {
     dictEntry *de;
     dictIterator *di;
 
     long long all_total = 0;
+    int max_other_print =  3;
+    int other_count = 0;
     for (int i = 0; i < server.dbnum; ++i) {
-        long total = 0, rock = 0;
-        di = dictGetIterator(server.db[i].dict);
+        long total = 0, rock = 0, share = 0, stream = 0;
         int print_one_key = 0;
+
+        di = dictGetIterator(server.db[i].dict);
         while ((de = dictNext(di))) {
             ++total;
             robj *o = dictGetVal(de);
@@ -93,16 +131,26 @@ void _rock_debug_print_key_report() {
                 sds key = dictGetKey(de);
                 dictEntry *check = dictFind(server.db[i].hotKeys, key);
                 if (check != NULL) 
-                    serverLog(LL_NOTICE, "something wrong, rock key in hotKeys! key = %s", key);
-            } 
+                    serverLog(LL_WARNING, "something wrong, rock key in hotKeys! key = %s", key);
+            } else if (o->refcount == OBJ_SHARED_REFCOUNT) {
+                ++share;
+            } else if (o->type == OBJ_STREAM) {
+                ++stream;
+            } else {
+                ++other_count;
+                if (other_count <= max_other_print) {
+                    serverLog(LL_NOTICE, "key = %s, val type = %d, encoding = %d, refcount = %d", 
+                        dictGetKey(de), o->type, o->encoding, o->refcount);
+                }
+            }
         }
-
         dictReleaseIterator(di);
+
         all_total += total;
         if (total) {
             int rockPercent = rock * 100 / total;
-            serverLog(LL_NOTICE, "db=%d, key total = %ld, value in rock = %ld, rock percentage = %d%%, hot key = %lu", 
-                i, total, rock, rockPercent, dictSize(server.db[i].hotKeys));
+            serverLog(LL_NOTICE, "db=%d, key total = %ld, value in rock = %ld, rock percentage = %d%%, hot key = %lu, shared = %lu, stream = %lu", 
+                i, total, rock, rockPercent, dictSize(server.db[i].hotKeys), share, stream);
         }
     }
     serverLog(LL_NOTICE, "all db key total = %lld", all_total);
@@ -197,26 +245,22 @@ struct rockPoolEntry {
     int dbid;                   /* Key DB number. */
 };
 
-/* init every hotKeys from every db's dict */
-void initHotKeys() {
+/* init every hotKeys from every db's dict, the first time add keys to hotKeys
+ * but there are a very edge case, all keys dupmed to Rocksdb or all keys is stream or shared object, 
+ * meaning no hot keys exist, if this time, we return 0 to indicate this edge case */
+int _initHotKeys() {
+    serverLog(LL_NOTICE, "_initHotKeys() called...");
     dictEntry *de;
+    int ret = 0;
     for (int i = 0; i < server.dbnum; ++i) {
         serverAssert(dictSize(server.db[i].hotKeys) == 0);
         dictIterator *dit = dictGetIterator(server.db[i].dict);
-        while ((de = dictNext(dit))) {
-            if (dictGetVal(de) != shared.valueInRock) 
-                dictAdd(server.db[i].hotKeys, dictGetKey(de), NULL);
-            else
-                serverLog(LL_NOTICE, "initHotKeys ERROR!!! found a rock key, key = %s", dictGetKey(de));            
-        }
-        /*
-        if (dictSize(server.db[i].dict)) {            
-            serverLog(LL_NOTICE, "all key size = %lu, hot key = %lu", 
-                dictSize(server.db[i].dict), dictSize(server.db[i].hotKeys));
-        }
-        */        
-        dictReleaseIterator(dit); 
+        while ((de = dictNext(dit))) 
+            addHotKeyIfNeed(&server.db[i], dictGetKey(de), dictGetVal(de), 1);
+        dictReleaseIterator(dit);
+        if (dictSize(server.db[i].hotKeys)) ret = 1;
     }
+    return ret;
 }
 
 static struct rockPoolEntry *RockPoolLRU;
@@ -1082,7 +1126,7 @@ int getMmemoryStateWithRock(size_t *tofree) {
 
     *tofree = mem_used + SAFE_MEMORY_ROCK_BEFORE_EVIC - server.maxmemory;
 
-    serverLog(LL_DEBUG, "maxmemory = %llu, repored =%lu, mem_aof_slave = %lu, rock = %lu, used = %lu, tofree = %lu, safe = %lu", 
+    serverLog(LL_NOTICE, "maxmemory = %llu, repored =%lu, mem_aof_slave = %lu, rock = %lu, used = %lu, tofree = %lu, safe = %lu", 
         server.maxmemory, mem_reported, mem_aof_slave, mem_rock, mem_used, *tofree, (long)SAFE_MEMORY_ROCK_BEFORE_EVIC);
 
     return C_ERR;   // we need to try to dump some values to rocksdb
@@ -1158,7 +1202,10 @@ int dumpValueToRockIfNeeded() {
     if (getMmemoryStateWithRock(&mem_tofree) == C_OK) return C_OK;
 
     /* we need try to dump some value to rocksdb for save memory */
-    if (_needInitHotKeys()) initHotKeys();    
+    if (_needInitHotKeys()) {
+        if (_initHotKeys() == 0) 
+            return C_INIT_HOT_KEY_ERR_FOR_ROCK;
+    }
 
     serverLog(LL_DEBUG, "need dump rockdb, tofree = %lu", mem_tofree);
 

@@ -30,6 +30,7 @@
 #include "server.h"
 #include "cluster.h"
 #include "atomicvar.h"
+#include "rock.h"
 
 #include <signal.h>
 #include <ctype.h>
@@ -194,10 +195,7 @@ void dbAdd(redisDb *db, robj *key, robj *val) {
     serverAssertWithInfo(NULL,key,retval == DICT_OK);
 
     /* when add key to db, we need to add it to hotKeys if hotKeys is activated */
-    if (dictSize(db->hotKeys)) {
-        int retHotKey = dictAdd(db->hotKeys, copy, NULL);
-        serverAssert(retHotKey == DICT_OK);
-    }
+    addHotKeyIfNeed(db, copy, val, 0);
 
     if (val->type == OBJ_LIST ||
         val->type == OBJ_ZSET)
@@ -223,8 +221,7 @@ void dbOverwrite(redisDb *db, robj *key, robj *val) {
     
     /* when update a key, we need to add it to the hotKeys if hotKeys activated */
     /* NOTE: the key in hotKeys maybe exist or not exist (because dumpling to the rocksdb) */
-    if (dictSize(db->hotKeys)) 
-        dictAdd(db->hotKeys, dictGetKey(de), NULL);  // NOTE: do not use key->ptr
+    addHotKeyIfNeed(db, dictGetKey(de), val, 0);
 
     if (server.lazyfree_lazy_server_del) {
         freeObjAsync(old);
@@ -310,7 +307,7 @@ int dbSyncDelete(redisDb *db, robj *key) {
      * the key, because it is shared with the main dictionary. */
     if (dictSize(db->expires) > 0) dictDelete(db->expires,key->ptr);
     /* we need to delete the hotkeys, no future dumping to rocksdb with the key */
-    if (dictSize(db->hotKeys) > 0) dictDelete(db->hotKeys, key->ptr);
+    deleteHotKeyIfNeed(db, key->ptr);
     if (dictDelete(db->dict,key->ptr) == DICT_OK) {
         if (server.cluster_enabled) slotToKeyDel(key);
         return 1;
@@ -324,7 +321,7 @@ int dbSyncDelete(redisDb *db, robj *key) {
 int dbDelete(redisDb *db, robj *key) {
     /* when delte a key to db, we need to delete it from hotKeys if hotKeys is activated */
     /* NOTE: the key maybe in hotKeys, or not exisist because it has been dumped to the rocksdb */
-    if (dictSize(db->hotKeys)) dictDelete(db->hotKeys, key->ptr);
+    deleteHotKeyIfNeed(db, key->ptr);
 
     return server.lazyfree_lazy_server_del ? dbAsyncDelete(db,key) :
                                              dbSyncDelete(db,key);

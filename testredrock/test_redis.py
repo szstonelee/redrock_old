@@ -11,6 +11,55 @@ POOL = redis.ConnectionPool(host='127.0.0.1',
                             socket_connect_timeout=2)
 
 
+# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+# or
+# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --save ""
+# after success, run redis-cli, issue command 'rock keyreport'
+# if you see how many keys in disk, you can check one rock key in the report by command 'get'
+# the value for it is like '01234567....'
+# try using 1, 2, 3, 4 million for the two situaations
+# when error exception: OOM command not allowed when used memory > 'maxmemory'
+def _warm_up_with_string(max_keys: int = 1_000_000):
+    r = redis.StrictRedis(connection_pool=POOL)
+    r.flushall()
+
+    val = ''
+    for i in range(2000):
+        val += str(i)
+    print(f'value length = {len(val)}')
+
+    start = time.time()
+    for i in range(max_keys):
+        if i % 100_000 == 0:
+            print(f"i = {i}, at time = {int(time.time())}")
+        r.set(i, val)
+
+    end = time.time()
+    print(f'Success! Warm up for total keys = {max_keys}, duration = {int(end-start)} seconds')
+
+
+# after _warm_up_with_string, using this to check all key's value even with most value in rocksdb
+def _check_all_key_in_string(max_keys: int = 1_000_000):
+    r = redis.StrictRedis(connection_pool=POOL)
+    val = ''
+    for i in range(2000):
+        val += str(i)
+
+    start = time.time()
+    for i in range(max_keys):
+        if i % 100_000 == 0:
+            print(f'i = {i}, time = {int(time.time())}')
+        db_val = r.get(str(i))
+        if db_val is None:
+            print(f'None until {i}')
+            return
+        if db_val != val:
+            print(f'wrong value, key = {i}, db val = {db_val}')
+            return
+    end = time.time()
+    print(f'Success! all keys value check correct!!! latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
+
+
 def _test():
     r = redis.StrictRedis(connection_pool=POOL)
     res = r.client_setname('debug')
@@ -80,23 +129,6 @@ def _inc_maxmemory_with_str():
     #r.bgsave()
 
 
-def _check_all_key_in_str():
-    # after execute _inc_maxmemory_with_str(), run this
-    r = redis.StrictRedis(connection_pool=POOL)
-    val = ''
-    for i in range(2000):
-        val += str(i)
-
-    start = time.time()
-    for i in range(100000):
-        db_val = r.get(str(i))
-        if db_val is None:
-            print(f'None until {i}')
-            break
-        if db_val != val:
-            print(f'wrong value, key = {i}, db val = {db_val}')
-    end = time.time()
-    print(f'latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
 
 
 def _dec_memory():
@@ -375,10 +407,18 @@ def _test_zset():
                 print(f'wrong, ht, {i}, val = {val}')
 
 
-if __name__ == '__main__':
-    _inc_maxmemory_with_str()
-    #_check_all_key_in_str()
+# _warm_up_with_string() and _warm_up_with_string(false)
+def _main():
+    max_keys = 1_000_000
+    _warm_up_with_string(max_keys)
+    _check_all_key_in_string(max_keys)
+    pass
 
+
+if __name__ == '__main__':
+    _main()
+    #_inc_maxmemory_with_str()
+    #_check_all_key_in_str()
     #_test()
     #_leak()
     #_dec_memory()

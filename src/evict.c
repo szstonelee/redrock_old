@@ -634,20 +634,28 @@ cant_free:
 int freeMemoryIfNeededAndSafe(void) {
     if (server.lua_timedout || server.loading) return C_OK;
 
-    // return C_OK;    // tempary disable rock dumping
-
     if (isRockFeatureEnabled()) {
         /* try decrease mememory first by dumping value to rocksdb */
-        if (dumpValueToRockIfNeeded() == C_OK) 
-            return C_OK;
+        int ret = dumpValueToRockIfNeeded();
+        if (ret == C_OK) return C_OK;
 
-        if (server.maxmemory_only_for_rocksdb) 
-            /* if no permit for eviction, we check the memory state
-            * C_OK for memory under limit, CK_ERR for OOM */
-            return getMaxmemoryState(NULL, NULL, NULL, NULL);    
-            // return C_OK;
+        if (ret == C_INIT_HOT_KEY_ERR_FOR_ROCK) {
+            // meaning no hot key can be used
+            if (server.maxmemory_only_for_rocksdb) {
+                serverLog(LL_WARNING, "no hot key available, and memory only for Rocksdb");
+                return C_ERR;   // OOM
+            } else {
+                return freeMemoryIfNeeded();    /* use eviction strategy, i.e. deleting keys or OOM */
+            }
+        } else {
+            // free memory to Rocksdb failed 
+            if (server.maxmemory_only_for_rocksdb)
+                return getMaxmemoryState(NULL, NULL, NULL, NULL);
+            else 
+                return freeMemoryIfNeeded();    /* use eviction strategy, i.e. deleting keys or OOM */
+        }
+    } else {
+        /* use eviction strategy, i.e. deleting keys or OOM */
+        return freeMemoryIfNeeded();
     }
-
-    /* try eviction strategy, i.e. deleting keys */
-    return freeMemoryIfNeeded();
 }

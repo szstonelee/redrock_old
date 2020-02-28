@@ -91,8 +91,10 @@ void teardown_rocksdb();
 void rock_test_read_rockdb(char *key);
 void rock_test_write_rockdb(char *val);
 size_t getMemoryOfRock();
-void initHotKeys();
+// void initHotKeys();
 void initSpinLock();
+void addHotKeyIfNeed(redisDb *db, sds key, robj *val, int from_init);
+void deleteHotKeyIfNeed(redisDb *db, sds key);
 
 int isRockFeatureEnabled();
 
