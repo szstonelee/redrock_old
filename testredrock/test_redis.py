@@ -10,10 +10,14 @@ POOL = redis.ConnectionPool(host='127.0.0.1',
                             encoding='utf-8',
                             socket_connect_timeout=2)
 
+LIST_VAL_LEN = 100
+SET_VAL_LEN = 1000
+HASH_VAL_LEN = 1000
+ZSET_VAL_LEN = 100
 
-# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 # or
-# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --save ""
+# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --save ""
 # after success, run redis-cli, issue command 'rock keyreport'
 # if you see how many keys in disk, you can check one rock key in the report by command 'get'
 # the value for it is like '01234567....'
@@ -24,7 +28,7 @@ def _warm_up_with_string(max_keys: int = 1_000_000):
     r.flushall()
 
     val = ''
-    for i in range(2000):
+    for i in range(2_000):
         val += str(i)
     print(f'value length = {len(val)}')
 
@@ -42,7 +46,7 @@ def _warm_up_with_string(max_keys: int = 1_000_000):
 def _check_all_key_in_string(max_keys: int = 1_000_000):
     r = redis.StrictRedis(connection_pool=POOL)
     val = ''
-    for i in range(2000):
+    for i in range(2_000):
         val += str(i)
 
     start = time.time()
@@ -60,377 +64,275 @@ def _check_all_key_in_string(max_keys: int = 1_000_000):
     print(f'Success! all keys value check correct!!! latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
 
 
-def _test():
-    r = redis.StrictRedis(connection_pool=POOL)
-    res = r.client_setname('debug')
-    print('ready for pipe')
-    pipe = r.pipeline(transaction=False)
-    pipe.get('abc')
-    pipe.get('def')
-    pipe.get('xxx')
-    for i in range(1<<20):
-        pipe.get('defgafarerwefdsfewrqwsafaerewrwer4dsfasdfsrffrerwqerqw')
-    print('before pipe execute')
-    res = pipe.execute()
-    len_res = len(res)
-    print(f'len = {len(res)}')
-    for i in range(min(10, len_res)):
-        print(res[i])
+# include every datatype
+# string: 0123...1999 string value
+# list: 0,1,100 list
+# set: 0,1,1000
+# hashset: field: 0, 1000, val: 0123..99
+# Zset: score 0-999, field 0-999
 
-
-def _resume():
-    r = redis.StrictRedis(connection_pool=POOL)
-    time.sleep(2)
-    r.echo('resume')
-
-
-def _pipe():
-    r = redis.StrictRedis(connection_pool=POOL)
-    res = r.client_setname('debug')
-    pipe = r.pipeline(transaction=False)
-    pipe.get('abc')
-    pipe.get('def')
-    pipe.get('xxx')
-    for _ in range(1<<15):
-        pipe.get('defgafarerwefdsfewrqwsafaerewrwer4dsfasdfsrffrerwqerqw')
-    t_resume = threading.Thread(target=_resume)
-    t_resume.start()
-    res = pipe.execute()
-    t_resume.join()
-    print(len(res))
-
-
-def _leak():
-    for _ in range(100000000):
-        t_pipe = threading.Thread(target=_pipe)
-        t_pipe.start()
-        t_pipe.join()
-
-
-def _inc_maxmemory_with_str():
-    # ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+def _warm_up_with_all_data_types(max_keys: int = 3_000):
     r = redis.StrictRedis(connection_pool=POOL)
     r.flushall()
+
+    string_val = ''
+    for i in range(2_000):
+        string_val += str(i)
+    hash_field_val = ''
+    for i in range(100):
+        hash_field_val += str(i)
+
+    start = time.time()
+    for i in range(max_keys):
+        if i % 1000 == 0:
+            print(f"i = {i}, at time = {int(time.time())}")
+
+        data_type = i % 8
+        if data_type is 0:
+            # String
+            r.set(i, string_val)
+        elif data_type is 1:
+            # list
+            for j in range(LIST_VAL_LEN):
+                r.lpush(i, j)
+        elif data_type is 2:
+            # set
+            for j in range(SET_VAL_LEN):
+                r.sadd(i, j)
+        elif data_type is 3:
+            # hash
+            for j in range(HASH_VAL_LEN):
+                r.hset(i, j, hash_field_val)
+        elif data_type is 4:
+            # zset
+            for j in range(ZSET_VAL_LEN):
+                r.zadd(i, {j:j})
+        elif data_type is 5:
+            # Geo
+            r.geoadd(i, 13.361389, 38.115556, "Palermo", 15.087269, 37.502669, "Catania")
+        elif data_type is 6:
+            # HyperLogLog
+            r.pfadd(i, 'a', 'b', 'c', 'd', 'e', 'f', 'g')
+        elif data_type is 7:
+            # Stream
+            r.xadd(i, fields={'field1':'value1', 'field2':'value2'})
+        else:
+            raise AssertionError
+
+    end = time.time()
+    print(f'Success! Warm up for total keys = {max_keys}, duration = {int(end-start)} seconds')
+
+
+def _check_all_key_in_data_types(max_keys: int = 3_000):
+
+    r = redis.StrictRedis(connection_pool=POOL)
+    string_check = ''
+    for i in range(2_000):
+        string_check += str(i)
+    list_check = []
+    for i in range(LIST_VAL_LEN):
+        list_check.append(str(i))
+    list_check.sort()
+    set_check = set()
+    for i in range(SET_VAL_LEN):
+        set_check.add(str(i))
+    hash_field_val = ''
+    for i in range(100):
+        hash_field_val += str(i)
+    hash_check = dict()
+    for i in range(HASH_VAL_LEN):
+        hash_check[str(i)] = hash_field_val
+    zset_check = []
+    for i in range(ZSET_VAL_LEN):
+        zset_check.append((str(i), float(i)))
+
+    start = time.time()
+    for i in range(max_keys):
+        if i % 1_000 == 0:
+            print(f"i = {i}, at time = {int(time.time())}")
+
+        data_type = i % 8
+        if data_type is 0:
+            # String
+            val = r.get(i)
+            if val is None:
+                raise Exception("None for string")
+            if val != string_check:
+                raise Exception("String value wrong")
+        elif data_type is 1:
+            # list
+            val = r.lrange(i, 0, -1)
+            if val is None:
+                raise Exception("None for list")
+            val.sort()
+            if val != list_check:
+                raise Exception("List value wrong")
+        elif data_type is 2:
+            # set
+            val = r.smembers(i)
+            if val is None:
+                raise Exception("None for set")
+            if val != set_check:
+                raise Exception("Set value wrong")
+        elif data_type is 3:
+            # hash
+            val = r.hgetall(i)
+            if val is None:
+                raise Exception("None for hash")
+            if val != hash_check:
+                raise Exception("Hash value wrong")
+        elif data_type is 4:
+            # zset
+            val = r.zrange(i, 0, -1, withscores=True)
+            if val is None:
+                raise Exception("None for hash")
+            if val != zset_check:
+                raise Exception("Zset value wrong")
+        elif data_type is 5:
+            # Geo
+            val = r.geohash(i, 'Catania', 'Palermo')
+            if val is None:
+                raise Exception("None for Geo")
+            if val != ['sqdtr74hyu0', 'sqc8b49rny0']:
+                raise Exception("Geo value wrong")
+        elif data_type is 6:
+            # HyperLogLog
+            val = r.pfcount(i)
+            if val is None:
+                raise Exception("None for HyperLogLog")
+            if val != 7:
+                raise Exception("HyperLogLog value wrong")
+        elif data_type is 7:
+            # Stream
+            val = r.xrange(i)
+            if val is None:
+                raise Exception("None for Stream")
+            if val[0][1] != {'field1':'value1', 'field2':'value2'}:
+                raise Exception("HyperLogLog value wrong")
+        else:
+            raise AssertionError
+
+    end = time.time()
+    print(f'Success! all keys value check correct!!! latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
+
+
+# please run _warm_up_with_string() first
+def _check_pipeline(max_keys: int = 1_000_000):
+    r = redis.StrictRedis(connection_pool=POOL)
     val = ''
-    for i in range(2000):
+    for i in range(2_000):
         val += str(i)
-    i = 0
-    start = time.time()
-    while i < 100000:
-        try:
-            r.set(i, val)
-            i += 1
-        except redis.exceptions.ResponseError:
-            time.sleep(0.001)
-            if (i % 10) == 0:
-                print(f'exception i = {i}')
-    end = time.time()
-    print(f'duration = {int(end-start)} seconds')
-    #r.bgsave()
+
+    for _ in range(1_000):
+        with r.pipeline(transaction=False) as pipe:
+            for _ in range(100):
+                random_key = random.randint(0, max_keys-1)
+                pipe.get(random_key)
+            batch = pipe.execute()
+            for i in range(100):
+                if batch is None or batch[i] != val:
+                    raise Exception("pipeline return wrong values")
+
+    print("Success for pipeline!")
 
 
-
-
-def _dec_memory():
-    total_latency = time.perf_counter()
+# please run _warm_up_with_string() first
+def _check_transaction(max_keys: int = 1_000_000):
     r = redis.StrictRedis(connection_pool=POOL)
-    for _ in range(1):
-        for i in range(100000):
-            r.get(str(i))
+    basic_val = ''
+    for i in range(2_000):
+        basic_val += str(i)
+    basic_len = len(basic_val)
 
-    total_latency = time.perf_counter() - total_latency
-    print(f'total latency = {total_latency}')
+    for i in range(10_000):
+        if i % 1_000 == 0:
+            print(f"transction i = {i}, at time = {int(time.time())}")
 
+        with r.pipeline(transaction=True) as pipe:
+            random_key1 = random.randint(0, max_keys-1)
+            pipe.get(random_key1)
+            random_key2 = random.randint(0, max_keys-1)
+            pipe.get(random_key2)
+            pipe.append(random_key2, basic_val)
+            pipe.execute()
 
-def _del_all_keys():
-    total_latency = time.perf_counter()
-    r = redis.StrictRedis(connection_pool=POOL)
-    for _ in range(1):
-        for i in range(1000000):
-            r.delete(str(i))
+    multi_count = 0
+    for i in range(max_keys):
+        if i % 10_000 == 0:
+            print(f"transaction check i = {i}, at time = {int(time.time())}")
 
-    total_latency = time.perf_counter() - total_latency
-    print(f'total latency = {total_latency}')
-
-
-def _test_replica():
-    r = redis.StrictRedis(connection_pool=POOL)
-    count = 0
-    for i in range(100000):
-        val = r.get(str(i))
-        if val is not None:
-            if len(val) != 6890:
-                print(f'key = {i}, val = {val}, len = {len(val)}')
-                count += 1
-
-    print(f'count = {count}')
-
-
-def _test_ser_des_string():
-    # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    total = 300000
-    val0 = 'aaa'
-    val1 = 12
-    val2 = 'b'*1000
-
-    for i in range(total):
-        m = i % 3
-        if m == 0:
-            r.set(i, val0)
-        elif m == 1:
-            r.set(i, val1)
-        elif m == 2:
-            r.set(i, val2)
-
-    for i in range(total):
         val = r.get(i)
-        m = i % 3
-        if m == 0:
-            if val != val0:
-                print(f'wrong {i}, val = {val}')
-        elif m == 1:
-            if val != str(val1):
-                print(f'wrong {i}, val = {val}')
+        multi = int(len(val)/basic_len)
+        if multi != 1:
+            multi_count += 1
+        if val != basic_val*multi:
+            raise Exception("transaction error")
+
+    print(f"Success for transaction! multi count = {multi_count}")
+
+
+def _warm_up_for_block(max_keys: int = 50_000):
+    r = redis.StrictRedis(connection_pool=POOL)
+    r.flushall()
+    
+    string_val = ''
+    for i in range(2_000):
+        string_val += str(i)
+    list_val = []
+    for i in range(1_000):
+        list_val.append(i)
+
+    for i in range(max_keys):
+        if i % 1_000 == 0:
+            print(f'i = {i}, time = {int(time.time())}')
+        is_list = (i % 2 == 0)
+
+        if is_list:
+            r.rpush(i, *list_val)
         else:
-            if val != val2:
-                print(f'wrong {i}, val = {val}')
+            r.set(i, string_val)
 
 
-def _test_ser_des_list():
+# run _warm_up_for_block() first
+def _check_block(max_keys: int = 50_000):
+    r = redis.StrictRedis(connection_pool=POOL)
+
+    for i in range(max_keys):
+        if i % 1_000 == 0:
+            print(f'i = {i}, time = {int(time.time())}')
+        is_list = (i % 2 == 0)
+
+        if is_list:
+            val = r.blpop(i)
+            if val is None or val != (str(i), '0'):
+                raise Exception(f"error for blpop, val = {val}")
+    
+
+def _check_rdb():
+    # first, run _warm_up_with_string() with
     # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    total = 500000
-    val0 = ['hello']
-    val0_str = ['hello']
-    val1 = ['a', 'bb', 'c'*1000]
-    val1_str = val1
-    val2 = [50, 'ddd', 999999]
-    val2_str = ['50', 'ddd', '999999']
-
-    #val1 = val0
-    #val1_str = val0_str
-    #val2 = val0
-    #val2_str = val0_str
-
-    for i in range(total):
-        m = i % 3
-        if m == 0:
-            val = val0
-        elif i % 3 == 1:
-            val = val1
-        else:
-            val = val2
-
-        r.rpush(i, *val)
-
-    #return
-
-    for i in range(total):
-        val = []
-        while True:
-            item = r.lpop(str(i))
-            if item is None:
-                break
-            else:
-                val.append(item)
-        m = i % 3
-        if m == 0:
-            if val != val0_str:
-                print(f'wrong {i}, val = {val}')
-        elif m == 1:
-            if val != val1_str:
-                print(f'wrong {i}, val = {val}')
-        else:
-            if val != val2_str:
-                print(f'wrong {i}, val = {val}')
-
-
-def _inc_maxmemory_with_list():
-    # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    total = 10000
-
-    val = []
-    start = time.time()
-    for i in range(total):
-        val.append(i)
-        r.rpush(i, *val)
-    end = time.time()
-    print(f'duration = {int(end-start)} seconds')
-
-
-def _test_block_list():
-    # first run _inc_maxmemory_with_list()
-    r = redis.StrictRedis(connection_pool=POOL)
-    total = 10000
-
-    for i in range(total):
-        val = r.brpop(i, 1)
-        if val is None:
-            print(f'time out for {i}')
-        elif val[1] != str(i):
-            print(f'wrong for {i}, val = {val}')
-
-
-def _inc_maxmemory_with_intset():
-    # ./redis-server --maxmemory 50m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    total = 30000
-
-    start = time.time()
-    for i in range(total):
-        for j in range(32):
-            r.sadd(i, j)
-    end = time.time()
-    print(f'duration = {int(end-start)} seconds')
-
-    v = 'a' * 10000
-    for i in range(total, total+3000):
-        r.set(i, v)
-
-    for i in range(total):
-        rand = random.randint(0, 31)
-        exist = r.sismember(i, rand)
-        if not exist:
-            print(f'wrong for {i}')
-
-
-def _inc_maxmemory_with_ht():
-    # ./redis-server --maxmemory 50m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    total = 3000
-
-    start = time.time()
-    for i in range(total):
-        for j in range(32):
-            val = 'a' * j
-            r.sadd(i, val)
-    end = time.time()
-    print(f'duration = {int(end-start)} seconds')
-
-    v = 'a' * 10000
-    for i in range(total, total+3000):
-        r.set(i, v)
-
-    for i in range(total):
-        rand = random.randint(0, 31)
-        rand_val = 'a' * rand
-        exist = r.sismember(i, rand_val)
-        if not exist:
-            print(f'wrong for {i}')
-
-
-def _test_ht_with_init_one_specific_key():
-    # reference _test_ser_des_hash_ht()
-    key = 'abc'
-    r = redis.StrictRedis(connection_pool=POOL)
-
-    for i in range(10000):
-        r.hset(key, i, i)
-
-
-def _test_zset_with_init_one_specific_key():
-    # reference _test_ser_des_zset_skiplist()
-    key = 'abc'
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    score = 0.123
-    for i in range(1000):
-        r.zadd(key, {"field+"+str(i): score})
-        score += 1
-
-
-def _test_hash():
-    # ./redis-server --maxmemory 50m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    total = 1000
-    for i in range(total):
-        if i % 2 == 0:
-            r.hset(i, 0, 123)
-            r.hset(i, 1, 'abc')
-            r.hset(i, 2, 456)
-            r.hset(i, 3, 'defg')
-        else:
-            for j in range(1000):
-                r.hset(i, j, 'a'*j)
-
-    for i in range(total):
-        if i % 2 == 0:
-            val = r.hget(i, 2)
-            if val != '456':
-                print(f'wrong, ziplist, {i}, val = {val}')
-        else:
-            val = r.hget(i, 555)
-            if val != 'a'*555:
-                print(f'wrong, ht, {i}, val = {val}')
-
-
-def _test_zset():
-    # ./redis-server --maxmemory 50m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-    r = redis.StrictRedis(connection_pool=POOL)
-    r.flushall()
-
-    total = 1000
-    for i in range(total):
-        if i % 2 == 0:
-            r.zadd(i, {"abc": 10})
-            r.zadd(i, {"defg": 22})
-            r.zadd(i, {"888": 88})
-        else:
-            score = 0.1234
-            for j in range(1000):
-                r.zadd(i, {'skiplist+'+str(j): score})
-                score += 1
-
-    for i in range(total):
-        if i % 2 == 0:
-            val = r.zpopmax(i)
-            if val[0] != '888' or val[1] != 88.0:
-                print(f'wrong, zset, ziplist, {i}, val = {val}')
-        else:
-            val = r.zrank(i, 'skiplist+5')
-            if val != 5:
-                print(f'wrong, ht, {i}, val = {val}')
+    # then redis-cli, bgsave, it takes time (you need check the save success result, i.e. "DB saved on disk"
+    # and you can see two process named as redis-server, one with huge memory
+    # theh, ctrl-c (double)
+    # then, ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
+    # then _check_all_key_in_string()
+    # repeat above but use save (not fork())
+    pass
 
 
 # _warm_up_with_string() and _warm_up_with_string(false)
 def _main():
-    max_keys = 1_000_000
-    _warm_up_with_string(max_keys)
-    _check_all_key_in_string(max_keys)
+    #max_keys = 1_000_000
+    #_warm_up_with_string()
+    _check_all_key_in_string()
+    #_warm_up_with_all_data_types()
+    #_check_all_key_in_data_types()
+    #_check_pipeline()
+    #_warm_up_for_block()
+    #_check_block()
+    #_check_transaction()
     pass
 
 
 if __name__ == '__main__':
     _main()
-    #_inc_maxmemory_with_str()
-    #_check_all_key_in_str()
-    #_test()
-    #_leak()
-    #_dec_memory()
-    #_del_all_keys()
-    #_test_replica()
-    #_test_ser_des_string()
-    #_test_ser_des_list()
-    #_inc_maxmemory_with_list()
-    #_test_block_list()
-    #_inc_maxmemory_with_intset()
-    #_inc_maxmemory_with_ht()
-    #_test_ht_with_init_one_specific_key()
-    #_test_hash()
-    #_test_zset_with_init_one_specific_key()
-    #_test_zset()

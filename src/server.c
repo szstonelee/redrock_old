@@ -2911,6 +2911,7 @@ void initServer(void) {
     initZeroRockJob();
     server.rockRdbParams = NULL;
     server.inSubChildProcessState = 0;  // for Main thread(&process) always False
+    server.alreadyInitHotKeys = 0;  // false
 }
 
 /* Some steps in server initialization need to be done last (after modules

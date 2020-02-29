@@ -74,8 +74,8 @@
 
 /* called from db.c. When key inserted, updated, delete, it may be needed 
  * to adjust the hotKey. val maybe null, if null, we need read it from db */
-void addHotKeyIfNeed(redisDb *db, sds key, robj *val, int from_init) {
-    if (!from_init && dictSize(db->hotKeys) == 0)
+void addHotKeyIfNeed(redisDb *db, sds key, robj *val) {
+    if (!server.alreadyInitHotKeys)
         return;     // meaning we do not enable hotKey, we only use the check for not init (db.c)
 
     if (val == NULL) {
@@ -88,21 +88,20 @@ void addHotKeyIfNeed(redisDb *db, sds key, robj *val, int from_init) {
     }
 
     if (val == shared.valueInRock) {
-        serverLog(LL_WARNING, "addHotKeyIfNeed() add key's value already in Rocksdb, %s", key);
-        return;      // if value already in Rocksdb, no need
-    }
+        serverLog(LL_WARNING, "addHotKeyIfNeed(), the value is RockValue! key = %s", key);
+        return;      // if value already in Rocksdb, no need  
+    }  
 
     if (val->type == OBJ_STREAM || val->refcount == OBJ_SHARED_REFCOUNT) {
         dictDelete(db->hotKeys, key);   // because may be overwrite
         return;   // we do not dump stream to Rocksdb
     }
 
-    int ret = dictAdd(db->hotKeys, key, NULL);
-    serverAssert(ret == DICT_OK);       // we think the key never exist before, otherwise it is a bug
+    dictAdd(db->hotKeys, key, NULL);    // maybe insert a hotkey or overwrite a hotkey
 }
 
 void deleteHotKeyIfNeed(redisDb *db, sds key) {
-    if (dictSize(db->hotKeys) == 0) return;     // hotKey not enable
+    if (!server.alreadyInitHotKeys) return;     // hotKey not enable
     dictDelete(db->hotKeys, key);       // key may be in hotKeys
 }
 
@@ -249,14 +248,13 @@ struct rockPoolEntry {
  * but there are a very edge case, all keys dupmed to Rocksdb or all keys is stream or shared object, 
  * meaning no hot keys exist, if this time, we return 0 to indicate this edge case */
 int _initHotKeys() {
-    serverLog(LL_NOTICE, "_initHotKeys() called...");
     dictEntry *de;
     int ret = 0;
     for (int i = 0; i < server.dbnum; ++i) {
         serverAssert(dictSize(server.db[i].hotKeys) == 0);
         dictIterator *dit = dictGetIterator(server.db[i].dict);
         while ((de = dictNext(dit))) 
-            addHotKeyIfNeed(&server.db[i], dictGetKey(de), dictGetVal(de), 1);
+            addHotKeyIfNeed(&server.db[i], dictGetKey(de), dictGetVal(de));
         dictReleaseIterator(dit);
         if (dictSize(server.db[i].hotKeys)) ret = 1;
     }
@@ -1126,13 +1124,15 @@ int getMmemoryStateWithRock(size_t *tofree) {
 
     *tofree = mem_used + SAFE_MEMORY_ROCK_BEFORE_EVIC - server.maxmemory;
 
-    serverLog(LL_NOTICE, "maxmemory = %llu, repored =%lu, mem_aof_slave = %lu, rock = %lu, used = %lu, tofree = %lu, safe = %lu", 
+    serverLog(LL_DEBUG, "maxmemory = %llu, repored =%lu, mem_aof_slave = %lu, rock = %lu, used = %lu, tofree = %lu, safe = %lu", 
         server.maxmemory, mem_reported, mem_aof_slave, mem_rock, mem_used, *tofree, (long)SAFE_MEMORY_ROCK_BEFORE_EVIC);
 
     return C_ERR;   // we need to try to dump some values to rocksdb
 }
 
 void _dumpValToRock(sds key, int dbid) {
+    serverAssert(!server.inSubChildProcessState);   // In child process for rdb-save, we can not dump value 
+
     dictEntry *de = dictFind(server.db[dbid].dict, key);
     serverAssert(de);
     robj *val = dictGetVal(de);
@@ -1181,14 +1181,25 @@ int _isValueSuitForDumpRock(sds key, dict *valueDict) {
     return val->refcount == 1 ? 1: 0;
 }
 
-/* find the hotkeys first time to init 
- * if ervery hotKeys in erery db is empty (maybe after flush or never been inited before), 
- * it is the right time to init, return 0 if no need, otherwise return 1 */
-int _needInitHotKeys() {
-    for (int i = 0; i < server.dbnum; ++i) {
-        if (dictSize(server.db[i].hotKeys)) return 0;
+/* when flushdb, db will be empted, check db.c */
+void clearHotKeysWhenEmptyDb(redisDb *db) {
+    if(!server.alreadyInitHotKeys) 
+    {
+        serverAssert(dictSize(db->hotKeys) == 0);
+        return;
     }
-    return 1;
+
+    if (dictSize(db->hotKeys) == 0) return;
+
+    dictEmpty(db->hotKeys, NULL);
+
+    for (int i = 0; i < server.dbnum; ++i) {
+        // if there are hotKeys exisit (in otherdb), we do nothing
+        if (dictSize(server.db[i].hotKeys)) return;
+    }
+
+    // every db hotkeys is empty and all db probably flushed, we set lazy init again
+    server.alreadyInitHotKeys = 0;  
 }
 
 /* if return C_OK, no need to freeMemoryIfNeeded(),
@@ -1201,8 +1212,9 @@ int dumpValueToRockIfNeeded() {
 
     if (getMmemoryStateWithRock(&mem_tofree) == C_OK) return C_OK;
 
-    /* we need try to dump some value to rocksdb for save memory */
-    if (_needInitHotKeys()) {
+    /* we use lazy way, getMmemoryStateWithRock() if C_OK, no need to init HotKeys */
+    if (!server.alreadyInitHotKeys) {
+        server.alreadyInitHotKeys = 1;  // only once
         if (_initHotKeys() == 0) 
             return C_INIT_HOT_KEY_ERR_FOR_ROCK;
     }

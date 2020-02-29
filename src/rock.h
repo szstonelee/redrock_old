@@ -93,8 +93,9 @@ void rock_test_write_rockdb(char *val);
 size_t getMemoryOfRock();
 // void initHotKeys();
 void initSpinLock();
-void addHotKeyIfNeed(redisDb *db, sds key, robj *val, int from_init);
+void addHotKeyIfNeed(redisDb *db, sds key, robj *val);
 void deleteHotKeyIfNeed(redisDb *db, sds key);
+void clearHotKeysWhenEmptyDb(redisDb *db);
 
 int isRockFeatureEnabled();
 

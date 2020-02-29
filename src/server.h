@@ -1424,6 +1424,7 @@ struct redisServer {
     char *rockdb_dir;             /* Name of the AOF file */
     struct RockRdbParams *rockRdbParams;
     int inSubChildProcessState;
+    int alreadyInitHotKeys;     /* flag to indicate whether the lazy hot keys initialized */
 };
 
 typedef struct pubsubPattern {

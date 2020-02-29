@@ -195,7 +195,7 @@ void dbAdd(redisDb *db, robj *key, robj *val) {
     serverAssertWithInfo(NULL,key,retval == DICT_OK);
 
     /* when add key to db, we need to add it to hotKeys if hotKeys is activated */
-    addHotKeyIfNeed(db, copy, val, 0);
+    addHotKeyIfNeed(db, copy, val);
 
     if (val->type == OBJ_LIST ||
         val->type == OBJ_ZSET)
@@ -221,7 +221,7 @@ void dbOverwrite(redisDb *db, robj *key, robj *val) {
     
     /* when update a key, we need to add it to the hotKeys if hotKeys activated */
     /* NOTE: the key in hotKeys maybe exist or not exist (because dumpling to the rocksdb) */
-    addHotKeyIfNeed(db, dictGetKey(de), val, 0);
+    addHotKeyIfNeed(db, dictGetKey(de), val);
 
     if (server.lazyfree_lazy_server_del) {
         freeObjAsync(old);
@@ -408,9 +408,7 @@ long long emptyDbGeneric(redisDb *dbarray, int dbnum, int flags, void(callback)(
     }
 
     for (int j = startdb; j <= enddb; j++) {
-        if (dictSize(dbarray[j].hotKeys)) 
-            // right now, we use sync, TODO: async
-            dictEmpty(dbarray[j].hotKeys, NULL);    
+        clearHotKeysWhenEmptyDb(&dbarray[j]);    // right now, we use sync, TODO: async
 
         removed += dictSize(dbarray[j].dict);
         if (async) {
