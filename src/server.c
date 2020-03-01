@@ -2908,6 +2908,8 @@ void initServer(void) {
 
     initSpinLock();
     initRockPipe();     /* init rock pipe and start the rock thread */
+    server.rockJob.workKey = NULL;
+    server.rockJob.returnKey = NULL;
     initZeroRockJob();
     server.rockRdbParams = NULL;
     server.inSubChildProcessState = 0;  // for Main thread(&process) always False

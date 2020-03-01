@@ -31,6 +31,7 @@
 #include "sha1.h"
 #include "rand.h"
 #include "cluster.h"
+#include "rock.h"
 
 #include <lua.h>
 #include <lauxlib.h>
@@ -722,6 +723,7 @@ int luaRedisGenericCommand(lua_State *lua, int raise_error) {
         if (server.lua_repl & PROPAGATE_REPL)
             call_flags |= CMD_CALL_PROPAGATE_REPL;
     }
+    scriptForBeforeEachCallForRock(c);
     call(c,call_flags);
 
     /* Convert the result of the Redis command into a suitable Lua type.
@@ -1565,6 +1567,7 @@ void evalGenericCommand(client *c, int evalsha) {
     /* At this point whether this script was never seen before or if it was
      * already defined, we can call it. We have zero arguments and expect
      * a single return value. */
+    scriptWhenStartForRock();
     err = lua_pcall(lua,0,1,-2);
 
     resetLuaClient();
@@ -1656,6 +1659,8 @@ void evalGenericCommand(client *c, int evalsha) {
             forceCommandPropagation(c,PROPAGATE_REPL|PROPAGATE_AOF);
         }
     }
+
+    scirptForBeforeExitForRock();
 }
 
 void evalCommand(client *c) {

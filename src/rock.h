@@ -71,7 +71,6 @@ typedef struct scriptMaybeKey {
 
 /* API */
 void rock_print_debug();
-// void rock_debug_print_key_report();
 void rock_test_resume_rock();
 void rock_test_set_rock_key(char *keyStr);
 void checkCallValueInRock(client *c);
@@ -91,12 +90,16 @@ void teardown_rocksdb();
 void rock_test_read_rockdb(char *key);
 void rock_test_write_rockdb(char *val);
 size_t getMemoryOfRock();
-// void initHotKeys();
 void initSpinLock();
 void addHotKeyIfNeed(redisDb *db, sds key, robj *val);
 void deleteHotKeyIfNeed(redisDb *db, sds key);
 void clearHotKeysWhenEmptyDb(redisDb *db);
 
 int isRockFeatureEnabled();
+
+void scriptWhenStartForRock();
+void scriptForBeforeEachCallForRock(client *c);
+void scirptForBeforeExitForRock();
+
 
 #endif

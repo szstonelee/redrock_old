@@ -204,8 +204,6 @@ void rockCommand(client *c) {
         _test_ser_des_zset();
     } else if (strcmp(echoStr, "testopendb") == 0) {
         init_rocksdb(server.dbnum, "/opt/test/");
-    } else if (strlen(echoStr) > 8 && memcmp(echoStr, "readrock", 8) == 0) {
-        rock_test_read_rockdb(echoStr+8);
     } else if (strlen(echoStr) > 9 && memcmp(echoStr, "writerock", 9) == 0) {
         rock_test_write_rockdb(echoStr+9);
     } else if (strcmp(echoStr, "rockmem") == 0) {
@@ -262,20 +260,6 @@ int _initHotKeys() {
 }
 
 static struct rockPoolEntry *RockPoolLRU;
-
-void rock_test_read_rockdb(char *key) {
-    void *val;
-    size_t len;
-    rocksdbapi_read(0, key, strlen(key), &val, &len);
-    if (val == NULL) {
-        serverLog(LL_NOTICE, "db read is null!");
-    } else {
-        if (len == 0)
-            serverLog(LL_NOTICE, "db read key = %s, val len = %lu, val empty string", key, len);
-        else
-            serverLog(LL_NOTICE, "db read key = %s, val len = %lu, val = %s", key, len, val);
-    }
-}
 
 void rock_test_write_rockdb(char *val) {
     char *key = "abcd";
@@ -497,7 +481,9 @@ int _hasMoreRockJob(int *dbid, sds *key) {
 void initZeroRockJob() {
     rocklock();
     server.rockJob.dbid = -1;
+    if (server.rockJob.workKey) sdsfree(server.rockJob.workKey);
     server.rockJob.workKey = NULL;
+    if (server.rockJob.returnKey) sdsfree(server.rockJob.returnKey);
     server.rockJob.returnKey = NULL;
     server.rockJob.valInRock = NULL;
     server.rockJob.alreadyFinishedByScript = 0;
@@ -510,8 +496,7 @@ int _isZeroRockJobState() {
     if (server.rockJob.dbid == -1) {
         ret = 1;
         serverAssert(server.rockJob.returnKey == NULL && server.rockJob.workKey == NULL);
-    }
-    else {
+    } else {
         ret = 0;
         if (server.rockJob.workKey == NULL)
             serverAssert(server.rockJob.returnKey != NULL);
@@ -525,10 +510,19 @@ int _isZeroRockJobState() {
 void _createNewJob(int dbid, sds key) {
     rocklock();
     serverAssert(dbid >= 0 && dbid < server.dbnum);
-    serverAssert(server.rockJob.workKey == NULL);   
-    server.rockJob.dbid = dbid;
-    server.rockJob.workKey = key;
+    serverAssert(server.rockJob.workKey == NULL);
+
+    if (server.rockJob.returnKey) 
+        // We need to release the resource allocated by the following code in previous timing
+        sdsfree(server.rockJob.returnKey);   
+
+    // NOTE: workKey must be a copy of key, becuase scripts may be delete the rockKeys
+    // SO we need to release it by ourself in the above codes
+    sds copyKey = sdsdup(key);
+    server.rockJob.workKey = copyKey;
+
     /* Note: before this point, returnKey maybe not be NULL */
+    server.rockJob.dbid = dbid;
     server.rockJob.returnKey = NULL;
     rockunlock();
 }
@@ -619,7 +613,7 @@ int _isAlreadyInScriptNeedFinishKeys(list *l, scriptMaybeKey *maybeKey) {
 
 /* when script finished, we need to scan the maybe-finished key, which is restore from rocksdb,
  * 'maybe' because for one command in script, the key is restored, but after that(by the command or other command followed it), 
- * the key maybe flushed to rocksdb again. So we need to check it again. And there maybe duplicated keys
+ * the key maybe dumped to rocksdb again. So we need to check it again. And there maybe duplicated keys
  * so we need to remove the duplicated key because we can only resume the client once */
 void _clearMaybeFinishKeyFromScript(list *maybeKeys) {
     listIter li;
@@ -680,7 +674,7 @@ void _clearMaybeFinishKeyFromScript(list *maybeKeys) {
             }
             rockunlock();
         }
-        /* delete the entry in rockKeys, NOTE: the key maybe NOTin rockKeys, different from  _clearFinishKey() */
+        /* delete the entry in rockKeys, NOTE: the key maybe NOT in rockKeys, different from  _clearFinishKey() */
         dictDelete(server.db[dbid].rockKeys, key);
     }
 
@@ -696,10 +690,6 @@ void _clearMaybeFinishKeyFromScript(list *maybeKeys) {
     listRelease(zeroClients);   
 }
 
-void _freeMaybeKey(void *maybeKey) {
-    sdsfree(((scriptMaybeKey*)maybeKey)->key);  // because the key is duplicated from
-    zfree(maybeKey);
-}
 
 void _checkRockForSingleCmd(client *c, list *l) {
     if (c->cmd->checkRockProc) 
@@ -722,15 +712,12 @@ void _restore_obj_from_rocksdb(int dbid, sds key, robj **val, int fromMainThread
     rocksdbapi_read(dbid, key, sdslen(key), &val_db_ptr, &val_db_len);
 
     if (val_db_ptr == NULL) {
-        if (!fromMainThread) {
-            serverLog(LL_NOTICE, "_doRockJobInRockThread() get null, key = %s", key);
-            *val = NULL;
-            return;
-        } else {
-            serverPanic("read null from rocksdb in maintThread");   // main thread call can not read null
-            *val = NULL;
-            return;
-        }
+        // fromMainThread meaning it is from script/rdb fork(), 
+        // otherwise it means from RockThread
+        serverLog(LL_WARNING, "_restore_obj_from_rocksdb(), fromMainThread = %d, subChild = %d, key = %s, ", 
+            fromMainThread, server.inSubChildProcessState, key);
+        serverPanic("_restore_obj_from_rocksdb()");
+        return;
     }
     
     // robj *o = desString(val_db_ptr, val_db_len);
@@ -755,15 +742,24 @@ void _doRockRestoreInMainThread(int dbid, sds key, robj **val) {
 // GLOBAL variable for script maybeFinishKey list
 static list *g_maybeFinishKeys = NULL;
 
-void scriptWhenStart() {
+void _freeMaybeKey(void *maybeKey) {
+    sdsfree(((scriptMaybeKey*)maybeKey)->key);  // because the key is duplicated
+    zfree(maybeKey);
+}
+
+/* when a script start, we need call this func to do some initiazation 
+ * it then combined with scriptForBeforeEachCall() and scirptForBeforeExit() 
+ * to do everthing related to rocksdb when it happened in script/LUA situation*/
+void scriptWhenStartForRock() {
     serverAssert(g_maybeFinishKeys == NULL);
     g_maybeFinishKeys = listCreate();
     g_maybeFinishKeys->free = _freeMaybeKey;  // free each key in scirptForBeforeExit()
 }
 
-/* every redis call in script, need to check the key in Rocksdb, if value in rocksdb
- * we need restore it in main thread, and add the key to g_maybeKeys */
-void scriptForBeforeEachCall(client *c) {
+/* every redis call() when a script is executing, need to check the key in Rocksdb, 
+ * if value in rocksdb, we need restore it in main thread later by scirptForBeforeExitForRock(), 
+ * side effects: add the restored keys to g_maybeKeys */
+void scriptForBeforeEachCallForRock(client *c) {
     int dbid = c->db->id;
     serverAssert(c);
     serverAssert(c->rockKeyNumber == 0);
@@ -805,7 +801,9 @@ void scriptForBeforeEachCall(client *c) {
     listRelease(valueInRockKeys);
 }
 
-void scirptForBeforeExit() {
+/* every script exit no matter successfully or failly, 
+ * need to call this to resume other clients for those keys restored from rocksdb to memory */
+void scirptForBeforeExitForRock() {
     _clearMaybeFinishKeyFromScript(g_maybeFinishKeys);
     listRelease(g_maybeFinishKeys);
     g_maybeFinishKeys = NULL;   // ready for next script
@@ -870,8 +868,9 @@ robj* loadValFromRockForRdb(int dbid, sds key) {
             serverLog(LL_WARNING, "Rocksdb string val is null in child process!");
         }
     } else {    
-        // for main process, we get rocksdb val in main thread
-        _doRockJobInRockThread(dbid, key, &o);
+        // for main process, we get rocksdb val in main thread for command like 'save'
+        // _doRockJobInRockThread(dbid, key, &o);
+        _doRockRestoreInMainThread(dbid, key, &o);
     }
     
     return o;

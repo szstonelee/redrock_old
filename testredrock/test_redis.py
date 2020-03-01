@@ -2,6 +2,7 @@ import redis
 import time
 import threading
 import random
+import threading
 
 POOL = redis.ConnectionPool(host='127.0.0.1',
                             port='6379',
@@ -307,6 +308,8 @@ def _check_block(max_keys: int = 50_000):
             if val is None or val != (str(i), '0'):
                 raise Exception(f"error for blpop, val = {val}")
     
+    print(f"Success for block!")
+
 
 def _check_rdb():
     # first, run _warm_up_with_string() with
@@ -320,9 +323,94 @@ def _check_rdb():
     pass
 
 
+def _check_replication():
+    # run first redis-server,
+    # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+    # run _warm_up_with_string() to ingest data to the first redis-server
+    # run second redis-server (if same machine like me, use different port and different folder, check the follwing)
+    # ./redis-server --port 6380 --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save ""
+    # redis-cli -p 6380 to connect to the second redis-server, use replicaof 127.0.0.1 6379 command
+    # it will take a long time ...
+    # use _check_all_key_in_string() but change the redis POOL config to use second port 6380 (you can test first 6379 also)
+    pass
+
+
+# run _warm_up_with_string() first
+def _check_lua1(max_keys: int = 1_000_000):
+    r = redis.StrictRedis(connection_pool=POOL)
+
+    check_val = ''
+    for i in range(2_000):
+        check_val += str(i)
+
+    script = """
+    local val = redis.call('GET', KEYS[1])
+    return val 
+    """
+    func = r.register_script(script)
+
+    for _ in range(10_000):
+        rand_key = str(random.randint(0, max_keys-1))
+        res = func(keys=[rand_key])
+        if res != check_val:
+            raise Exception("val not correct!")
+
+
+# run _warm_up_with_string() first
+def _check_lua2(max_keys: int = 1_000_000):
+    r = redis.StrictRedis(connection_pool=POOL)
+
+    check_val = ''
+    for i in range(2_000):
+        check_val += str(i)
+
+    script = """
+    local vals = {}
+    local total = ARGV[1]
+    for i = 1, total, 1
+    do    
+        local val = redis.call('GET', KEYS[i])
+        vals[i] = val
+    end 
+    return vals 
+    """
+    lua_func = r.register_script(script)
+
+    TOTAL_THREAD_NUMBER = 10
+    thread_return_strings = []
+    for _ in range(TOTAL_THREAD_NUMBER):
+        thread_return_strings.append('')
+
+    def thread_func(tid: int, key: str):
+        r_thread = redis.StrictRedis(connection_pool=POOL)
+        thread_val = r_thread.get(key)
+        if thread_val is None:
+            raise Exception("thread failed for Nil")
+        thread_return_strings[tid] = thread_val
+
+    for _ in range(1000):
+        random_keys = []
+        for _ in range(TOTAL_THREAD_NUMBER):
+            random_keys.append(str(random.randint(0, max_keys-1)))
+        ts = []
+        for i in range(TOTAL_THREAD_NUMBER):
+            t = threading.Thread(target=thread_func, args=(i, random_keys[i],))
+            ts.append(t)
+            t.start()
+        lua_return_strings = lua_func(keys=random_keys, args=[TOTAL_THREAD_NUMBER])
+        for i in range(TOTAL_THREAD_NUMBER):
+            ts[i].join()
+        # check the value
+        for i in range(TOTAL_THREAD_NUMBER):
+            if lua_return_strings[i] != check_val:
+                raise Exception("lua return value not correct!")
+            if thread_return_strings[i] != check_val:
+                raise Exception("thread value not correct!")
+            
+
+
 # _warm_up_with_string() and _warm_up_with_string(false)
 def _main():
-    #max_keys = 1_000_000
     #_warm_up_with_string()
     _check_all_key_in_string()
     #_warm_up_with_all_data_types()
@@ -331,6 +419,8 @@ def _main():
     #_warm_up_for_block()
     #_check_block()
     #_check_transaction()
+    #_check_lua1()
+    #_check_lua2()
     pass
 
 

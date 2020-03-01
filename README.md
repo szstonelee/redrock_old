@@ -8,7 +8,7 @@ RedRock is a combination of [Redis](https://github.com/antirez/redis) and [Rocks
 ## Why
 Redis is a wonderful NOSQL based on memory. But memory is too expensive. We hope,
 * Same fast and strong as Redis
-* Redis can extend to storage (HDD or SSD)
+* Extend to storage (HDD or SSD)
 
 As SSD is becoming cheaper and has good performance, it is why I, enigneer Stone, code RedRock. 
 
@@ -36,11 +36,10 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 * Support Redis Blocking
 * Support for Script/LUA is coming
 * Support subscribe/publish
-* Support original stats for Redis, plus our storage stats
-* Support slow log
+* Support original stats for Redis including SlowLog, plus our storage stats
 * Good for mass intensive writing to storage
 * When main load is for hot keys, performance is almost the same as Pure Redis, i.e. Million rps for one node
-* When coming to avarage random key visit pattern, performance maybe degrade by 1 maganitude order，i.e Hundreds Kilo rps for one node
+* When coming to avarage random key visit pattern, performance maybe degrade by 1 maganitude order，I guess Hundred Kilo rps for one node
 * Using Rocksdb library, but overload of memory in db engine is limited to tens MB
 * Keep the main logic in main thread as Redis, low level for thread switch and race risks.
 * Key/value length limit is same as Redis
@@ -58,7 +57,7 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 [Support all Redis commands, click for more notice](documents/commands_en.md)
 
-# Supported Redis Feature
+# Supported Redis Features
 
 [Maybe support all Redis features, e.g. Master/Slave, Cluster, Transaction, more details.](documents/feature_en.md)
 
@@ -78,6 +77,6 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 [Some tools for stats](documents/stat_en.md)
 
-# Peers Similar Projects
+# Peer Similar Projects
 
 [You can compare and choose other project from the similiar peers.](documents/peers_en.md)
