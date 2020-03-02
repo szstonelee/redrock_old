@@ -117,11 +117,11 @@ sds serString(sds dst, robj *o) {
 /* descerialize buffer to robj when the buffer from rocksdb is String Type 
  * please reference the above serString() for reference */
 #define OBJ_ENCODING_EMBSTR_SIZE_LIMIT 44
-robj *desString(char *s, size_t len) {
-    serverAssert(len >= 2);
+robj *desString(char *s, size_t len, uint32_t lru) {
+    serverAssert(len >= 2+sizeof(uint32_t));
     serverAssert(s[0] == ROCK_TYPE_STRING);
-    ++s;
-    --len;
+    s += 1+sizeof(uint32_t);
+    len -= 1+sizeof(uint32_t);
 
     robj *o;
     int encoding = (int)(*s);
@@ -140,6 +140,7 @@ robj *desString(char *s, size_t len) {
             o = createEmbeddedStringObject(s, len);
         }
     }
+    o->lru = lru;
     return o;
 }
 
@@ -174,11 +175,11 @@ sds serList(sds dst, robj *o) {
 }
 
 /* reference rdb.c rdbLoadObject() and the above serList() */
-robj *desList(char *s, size_t len) {    
-    serverAssert(len >= 1);
+robj *desList(char *s, size_t len, uint32_t lru) {    
+    serverAssert(len >= 1+sizeof(uint32_t));
     serverAssert(s[0] == ROCK_TYPE_LIST_QUICKLIST);
-    ++s;
-    --len;
+    s += 1+sizeof(uint32_t);
+    len -= 1+sizeof(uint32_t);
 
     robj *list = createQuicklistObject();
     quicklistSetOptions(list->ptr, server.list_max_ziplist_size,
@@ -195,6 +196,7 @@ robj *desList(char *s, size_t len) {
         len -= entry_len;
     }
 
+    list->lru = lru;
     return list;
 }
 
@@ -230,11 +232,11 @@ sds serSet(sds dst, robj *o) {
 }
 
 /* reference rdb.c rdbLoadObject() and serSet() */
-robj *desSet(char *s, size_t len) {
-    serverAssert(len >= 1);
-    int set_rock_type = (int)(*s);
-    ++s;
-    --len;
+robj *desSet(char *s, size_t len, uint32_t lru) {
+    serverAssert(len >= 1 + sizeof(uint32_t));
+    int set_rock_type = *s;
+    s += 1+sizeof(uint32_t);
+    len -= 1+sizeof(uint32_t);
 
     robj *o = NULL;
     if (set_rock_type == ROCK_TYPE_SET_INTSET) {
@@ -291,6 +293,7 @@ robj *desSet(char *s, size_t len) {
         serverPanic("desSet()");
     }
 
+    o->lru = lru;
     return o;
 }
 
@@ -330,11 +333,11 @@ sds serHash(sds dst, robj *o) {
 }
 
 /* reference rdb.c rdbLoadObject() and serHash() */
-robj *desHash(char *s, size_t len) {
-    serverAssert(len >= 1);
-    int hash_rock_type = (int)(*s);
-    ++s;
-    --len;
+robj *desHash(char *s, size_t len, uint32_t lru) {
+    serverAssert(len >= 1+sizeof(uint32_t));
+    int hash_rock_type = *s;
+    s += 1+sizeof(uint32_t);
+    len -= 1+sizeof(uint32_t);
 
     robj *o = NULL;
     if (hash_rock_type == ROCK_TYPE_HASH_ZIPLIST) {
@@ -393,6 +396,7 @@ robj *desHash(char *s, size_t len) {
         serverPanic("desHash()");
     }
 
+    o->lru = lru;
     return o;
 }
 
@@ -428,11 +432,11 @@ sds serZset(sds dst, robj *o) {
     return dst; 
 }
 
-robj *desZset(char *s, size_t len) {
-    serverAssert(len >= 1);
-    int zset_rock_type = (int)(*s);
-    ++s;
-    --len;
+robj *desZset(char *s, size_t len, uint32_t lru) {
+    serverAssert(len >= 1+sizeof(uint32_t));
+    int zset_rock_type = *s;
+    s += 1+sizeof(uint32_t);
+    len -= 1+sizeof(uint32_t);
 
     robj *o = NULL;
     if (zset_rock_type == ROCK_TYPE_ZSET_ZIPLIST) {
@@ -486,6 +490,7 @@ robj *desZset(char *s, size_t len) {
         serverPanic("desZset()");
     }
 
+    o->lru = lru;
     return o;
 }
 
@@ -494,6 +499,10 @@ robj *desZset(char *s, size_t len) {
 sds serObject(robj *o) {
     sds dst;
     dst = serObjectType(o);     // first byte is the object type
+
+    // then 24bits for LRU/LFU
+    uint32_t lru = o->lru;
+    dst = sdscatlen(dst, &lru, sizeof(uint32_t));
 
     if (o->type == OBJ_STRING) {
         dst = serString(dst, o);
@@ -516,20 +525,25 @@ sds serObject(robj *o) {
 robj *desObject(void *buf, size_t len) {
     serverAssert(len > 0);
     char rock_type = *(char*)buf;
+
+    serverAssert(len >= 1+sizeof(uint32_t));
+    // then 32bit -> 24bit LRU/LFU
+    uint32_t lru = *((uint32_t*)((char*)buf+1));
+
     switch (rock_type) {
     case ROCK_TYPE_STRING:
-        return desString(buf, len);
+        return desString(buf, len, lru);
     case ROCK_TYPE_LIST_QUICKLIST:
-        return desList(buf, len);
+        return desList(buf, len, lru);
     case ROCK_TYPE_SET_HT:
     case ROCK_TYPE_SET_INTSET:
-        return desSet(buf, len);
+        return desSet(buf, len, lru);
     case ROCK_TYPE_HASH_HT:
     case ROCK_TYPE_HASH_ZIPLIST:
-        return desHash(buf, len);
+        return desHash(buf, len, lru);
     case ROCK_TYPE_ZSET_ZIPLIST:
     case ROCK_TYPE_ZSET_SKIPLIST:
-        return desZset(buf, len);
+        return desZset(buf, len, lru);
     default:
         serverPanic("desObject type error!");
         return NULL;        
@@ -807,7 +821,7 @@ void _test_ser_des_string(void) {
     size_t len1 = sdslen(ser1);
     void *p1 = zmalloc(len1);
     memcpy(p1, ser1, len1);
-    robj *d1 = desString(p1, len1);
+    robj *d1 = desString(p1, len1, s1->lru);
     serverAssert(d1->refcount == 1);
 
     if (s1->type != d1->type) 
@@ -822,7 +836,7 @@ void _test_ser_des_string(void) {
     size_t len2 = sdslen(ser2);
     void *p2 = zmalloc(len2);
     memcpy(p2, ser2, len2);
-    robj *d2 = desString(p2, len2);
+    robj *d2 = desString(p2, len2, s2->lru);
     serverAssert(d2->refcount == 1);
 
     if (s2->type != d2->type) 
@@ -840,7 +854,7 @@ void _test_ser_des_string(void) {
     serverLog(LL_NOTICE, "len3 = %lu", len3);
     void *p3 = zmalloc(len3);
     memcpy(p3, ser3, len3);
-    robj *d3 = desString(p3, len3);
+    robj *d3 = desString(p3, len3, s3->lru);
     serverAssert(d3->refcount == 1);
 
     if (s3->type != d3->type) 

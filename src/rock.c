@@ -125,7 +125,7 @@ void _rock_debug_print_key_report() {
                 if (!print_one_key) {
                     sds key = dictGetKey(de);
                     print_one_key = 1;
-                    serverLog(LL_NOTICE, "db=%d, one rock key = %s", i, key);
+                    serverLog(LL_NOTICE, "db=%d, at lease one rock key = %s", i, key);
                 }
                 sds key = dictGetKey(de);
                 dictEntry *check = dictFind(server.db[i].hotKeys, key);
@@ -138,7 +138,7 @@ void _rock_debug_print_key_report() {
             } else {
                 ++other_count;
                 if (other_count <= max_other_print) {
-                    serverLog(LL_NOTICE, "key = %s, val type = %d, encoding = %d, refcount = %d", 
+                    serverLog(LL_NOTICE, "no-rock-key: key = %s, val type = %d, encoding = %d, refcount = %d", 
                         dictGetKey(de), o->type, o->encoding, o->refcount);
                 }
             }
@@ -178,21 +178,30 @@ void _print_rock_key(long limit) {
     }
 }
 
+void _debug_lru() {
+    int db_count = 0, rock_count = 0, hot_count = 0;
+    for (int i = 0; i< 1000; ++i) {
+        sds key = sdsfromlonglong(i);
+        dictEntry *de = dictFind(server.db[0].dict, key);
+        if (de) {
+            ++db_count;
+            robj *val = dictGetVal(de);
+            if (val == shared.valueInRock)
+                ++rock_count;
+        }
+        de = dictFind(server.db[0].hotKeys, key);
+        if (de) ++hot_count;
+        sdsfree(key);
+    }
+    serverLog(LL_NOTICE, "db_count = %d, rock_count = %d, hot_count = %d", 
+        db_count, rock_count, hot_count);
+}
+
 void rockCommand(client *c) {
     serverLog(LL_NOTICE, "rock command!");
 
     char *echoStr = c->argv[1]->ptr;
-    if (strcmp(echoStr, "print") == 0) {
-        rock_print_debug();
-    } else if (strcmp(echoStr, "resume") == 0) {
-        rock_test_resume_rock();
-    } else if (strcmp(echoStr, "keyreport") == 0) {
-        _rock_debug_print_key_report();
-    } else if (strlen(echoStr) > 7 && memcmp(echoStr, "setrock", 7) == 0) {
-        rock_test_set_rock_key(echoStr+7);
-    } else if (strlen(echoStr) > 7 && memcmp(echoStr, "addwork", 7) == 0) {
-        test_add_work_key(0, echoStr+7, strlen(echoStr)-7);
-    } else if (strcmp(echoStr, "testserdesstr") == 0) {
+    if (strcmp(echoStr, "testserdesstr") == 0) {
         _test_ser_des_string();
     } else if (strcmp(echoStr, "testserdeslist") == 0) {
         _test_ser_des_list();
@@ -202,10 +211,6 @@ void rockCommand(client *c) {
         _test_ser_des_hash();
     } else if (strcmp(echoStr, "testserdeszset") == 0) {
         _test_ser_des_zset();
-    } else if (strcmp(echoStr, "testopendb") == 0) {
-        init_rocksdb(server.dbnum, "/opt/test/");
-    } else if (strlen(echoStr) > 9 && memcmp(echoStr, "writerock", 9) == 0) {
-        rock_test_write_rockdb(echoStr+9);
     } else if (strcmp(echoStr, "rockmem") == 0) {
         size_t mem_usage = getMemoryOfRock();
         serverLog(LL_NOTICE, "rock mem usage = %lu", mem_usage);
@@ -217,6 +222,10 @@ void rockCommand(client *c) {
             getLongLongFromObject(c->argv[2], &keyLimit);
         if (keyLimit <= 0) keyLimit = 1;
         _print_rock_key(keyLimit);
+    } else if (strcmp(echoStr, "report") == 0) {
+        _rock_debug_print_key_report();
+    } else if (strcmp(echoStr, "debuglru") == 0) {
+        _debug_lru();
     }
 
     addReplyBulk(c,c->argv[1]);
@@ -260,12 +269,6 @@ int _initHotKeys() {
 }
 
 static struct rockPoolEntry *RockPoolLRU;
-
-void rock_test_write_rockdb(char *val) {
-    char *key = "abcd";
-
-    rocksdbapi_write(0, key, strlen(key), val, strlen(val));
-}
 
 /* error return -1, 1 init ok */
 int init_rocksdb(int dbnum, char *path) {
@@ -1053,47 +1056,6 @@ void _debugPrintClient(char *callInfo, client *c) {
         callInfo, flags, qb_pos, querybufLen, argc, cmdStr, firstParam);
 }
 
-void rock_print_debug() {
-    listIter *it = listGetIterator(server.clients, AL_START_HEAD);
-
-    for (listNode* node = listNext(it); node != NULL; node = listNext(it)) 
-        _debugPrintClient("rock_print_debug()", node->value);
-
-    listReleaseIterator(it);
-}
-
-
-
-
-void rock_test_resume_rock() {
-    listIter *it = listGetIterator(server.clients, AL_START_HEAD);
-
-    for (listNode *node = listNext(it); node != NULL; node = listNext(it)) {
-        client *c = node->value;
-        if (c->rockKeyNumber) {
-            c->rockKeyNumber = 0;
-            checkThenResumeRockClient(c);
-            break;
-        }
-    }
-
-    listReleaseIterator(it);
-}
-
-void rock_test_set_rock_key(char* keyStr) {
-    serverLog(LL_NOTICE, "_test_set_rock_key, key = %s", keyStr);
-    robj *key = createStringObject(keyStr, strlen(keyStr));
-    genericSetKey(server.db, key, shared.valueInRock, 0);
-}
-
-void test_add_work_key(int dbid, char *key, size_t len) {
-    rocklock();
-    serverAssert(server.rockJob.workKey == NULL && server.rockJob.returnKey == NULL && server.rockJob.dbid == -1);
-    server.rockJob.dbid = dbid;
-    server.rockJob.workKey = sdsnewlen(key, len);
-    rockunlock();
-}
-
 size_t getMemoryOfRock() {
     if (!isRockFeatureEnabled()) return 0;
 
@@ -1211,11 +1173,22 @@ int dumpValueToRockIfNeeded() {
 
     if (getMmemoryStateWithRock(&mem_tofree) == C_OK) return C_OK;
 
-    /* we use lazy way, getMmemoryStateWithRock() if C_OK, no need to init HotKeys */
+    /* we use lazy init for HotKeys, getMmemoryStateWithRock() if C_OK, no need to init HotKeys */
     if (!server.alreadyInitHotKeys) {
         server.alreadyInitHotKeys = 1;  // only once
-        if (_initHotKeys() == 0) 
-            return C_INIT_HOT_KEY_ERR_FOR_ROCK;
+        int ret = _initHotKeys();
+        serverAssert(ret != 0);
+    }
+
+    if (!server.maxmemory_only_for_rocksdb) {
+        // we keep some hotkeys alive, i.e. not dumping all keys to Rocksdb
+        // because we can try to use eviction way when not server.maxmemory_only_for_rocksdb
+        // otherwise, eviction can not take effect because all lru/lfu value in Rocksdb not in memory
+        long long total_hot_keys = 0;
+        for (int i = 0; i < server.dbnum; ++i) {
+            total_hot_keys += dictSize(server.db[i].hotKeys);
+            if (total_hot_keys <= 1000) return C_ERR;       // try eviction with at least 1K keys alive
+        }
     }
 
     serverLog(LL_DEBUG, "need dump rockdb, tofree = %lu", mem_tofree);

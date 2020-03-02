@@ -20,13 +20,13 @@ It is not as mature as a project for ten years.
 Wish you use it more and leave feedbacks at Github. Thank you.
 
 ## RedRock Features
-* Pure Redis. When not enable storage, RedRock is running almost the same codes as Redis
+* Pure Redis. When no enable disk, RedRock is running almost the same codes as Redis
 * Support all Redis commands
 * Support expire, you can use it as Cache
 * Support all Redis data structures, including, String,List,Set,Hash,SortedSet,Stream,HyperLogLog,Geo
-* Support persistence, including RDB and AOF, backup could use fork() or main thread
-* Can config maximum memory usage
-* Policy for dumping value to storage supports LRU and LFU
+* Support persistence, including RDB and AOF, in fork() or main thread
+* Can config maximum memory
+* Policy for dumping value to disk supports LRU and LFU
 * Support Replication: Leader/Follower(i.e. Master/Slave) replica
 * I think it would support Redis Sentinel
 * I think it would support Reids Cluster. So no need for Twemproxy and Codis

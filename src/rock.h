@@ -72,7 +72,6 @@ typedef struct scriptMaybeKey {
 /* API */
 void rock_print_debug();
 void rock_test_resume_rock();
-void rock_test_set_rock_key(char *keyStr);
 void checkCallValueInRock(client *c);
 void initRockPipe();
 void initZeroRockJob();

@@ -65,14 +65,14 @@ def _check_all_key_in_string(max_keys: int = 1_000_000):
     print(f'Success! all keys value check correct!!! latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
 
 
+# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 # include every datatype
 # string: 0123...1999 string value
 # list: 0,1,100 list
 # set: 0,1,1000
 # hashset: field: 0, 1000, val: 0123..99
 # Zset: score 0-999, field 0-999
-
-def _warm_up_with_all_data_types(max_keys: int = 3_000):
+def _warm_up_with_all_data_types(max_keys: int = 5_000):
     r = redis.StrictRedis(connection_pool=POOL)
     r.flushall()
 
@@ -124,7 +124,7 @@ def _warm_up_with_all_data_types(max_keys: int = 3_000):
     print(f'Success! Warm up for total keys = {max_keys}, duration = {int(end-start)} seconds')
 
 
-def _check_all_key_in_data_types(max_keys: int = 3_000):
+def _check_all_key_in_data_types(max_keys: int = 5_000):
 
     r = redis.StrictRedis(connection_pool=POOL)
     string_check = ''
@@ -406,13 +406,69 @@ def _check_lua2(max_keys: int = 1_000_000):
                 raise Exception("lua return value not correct!")
             if thread_return_strings[i] != check_val:
                 raise Exception("thread value not correct!")
-            
 
 
-# _warm_up_with_string() and _warm_up_with_string(false)
+# run
+# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu
+def _warm_lfu_for_eviction_check():
+    r = redis.StrictRedis(connection_pool=POOL)
+    r.flushall()
+
+    val = ''
+    for i in range(2_000):
+        val += str(i)
+
+    touch_keys = []
+    for i in range(1_000):
+        touch_keys.append(str(i))
+
+    def refresh_key_for_lfu():
+        r.touch(*touch_keys)
+
+    start = time.time()
+    for i in range(3_000_000):
+        if i >= 1_000 and i % 1_000 == 0:
+            refresh_key_for_lfu()
+
+        if i % 100_000 == 0:
+            print(f"i = {i}, at time = {int(time.time())}")
+        r.set(i, val)
+
+    end = time.time()
+    print(f'Success! Warm up for total keys = 3_000_000, duration = {int(end-start)} seconds')
+
+
+# please run  _warm_lru_lfu_for_eviction_check() first
+def _check_lfu_for_eviction():
+    r = redis.StrictRedis(connection_pool=POOL)
+    val = ''
+    for i in range(2_000):
+        val += str(i)
+
+    # check
+    evict_total = 0
+    evict_count_lfu = 0
+    err_count = 0
+    for i in range(3_000_000):
+        if i % 100_000 == 0:
+            print(f'i = {i}, time = {int(time.time())}')
+
+        check_val = r.get(i)
+        if check_val is None:
+            if i < 1000:
+                evict_count_lfu += 1
+            evict_total += 1
+        elif check_val != val:
+            err_count += 1
+
+    print(f'eviction total = {evict_total}, eviction of lfu = {evict_total}, err = {err_count}')
+    print(f'eviction Per mille = {int(1000*evict_total/3_000_000)} , '
+          f'eviction lfu Per mille = {int(1000*evict_count_lfu/1_000)}%')
+
+
 def _main():
     #_warm_up_with_string()
-    _check_all_key_in_string()
+    #_check_all_key_in_string()
     #_warm_up_with_all_data_types()
     #_check_all_key_in_data_types()
     #_check_pipeline()
@@ -421,6 +477,9 @@ def _main():
     #_check_transaction()
     #_check_lua1()
     #_check_lua2()
+    #_check_lru()
+    #_warm_lfu_for_eviction_check()
+    #_check_lfu_for_eviction()
     pass
 
 

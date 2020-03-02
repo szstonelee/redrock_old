@@ -186,7 +186,12 @@ void evictionPoolPopulate(int dbid, dict *sampledict, dict *keydict, struct evic
          * idle just because the code initially handled LRU, but is in fact
          * just a score where an higher score means better candidate. */
         if (server.maxmemory_policy & MAXMEMORY_FLAG_LRU) {
-            idle = estimateObjectIdleTime(o);
+            if (o == shared.valueInRock)
+                // if value in Rocksdb, we assume it is the cold value
+                // and always has the biggest IDLE TIME so it is the good candidate to be evicted
+                idle = ULONG_MAX;        
+            else
+                idle = estimateObjectIdleTime(o);
         } else if (server.maxmemory_policy & MAXMEMORY_FLAG_LFU) {
             /* When we use an LRU policy, we sort the keys by idle time
              * so that we expire keys starting from greater idle time.
@@ -195,7 +200,10 @@ void evictionPoolPopulate(int dbid, dict *sampledict, dict *keydict, struct evic
              * first. So inside the pool we put objects using the inverted
              * frequency subtracting the actual frequency to the maximum
              * frequency of 255. */
-            idle = 255-LFUDecrAndReturn(o);
+            if (o == shared.valueInRock)
+                idle = 255;
+            else
+                idle = 255-LFUDecrAndReturn(o);
         } else if (server.maxmemory_policy == MAXMEMORY_VOLATILE_TTL) {
             /* In this case the sooner the expire the better. */
             idle = ULLONG_MAX - (long)dictGetVal(de);
@@ -639,23 +647,14 @@ int freeMemoryIfNeededAndSafe(void) {
         int ret = dumpValueToRockIfNeeded();
         if (ret == C_OK) return C_OK;
 
-        if (ret == C_INIT_HOT_KEY_ERR_FOR_ROCK) {
-            // meaning no hot key can be used
-            if (server.maxmemory_only_for_rocksdb) {
-                serverLog(LL_WARNING, "no hot key available, and memory only for Rocksdb");
-                return C_ERR;   // OOM
-            } else {
-                return freeMemoryIfNeeded();    /* use eviction strategy, i.e. deleting keys or OOM */
-            }
-        } else {
-            // free memory to Rocksdb failed 
-            if (server.maxmemory_only_for_rocksdb)
-                return getMaxmemoryState(NULL, NULL, NULL, NULL);
-            else 
-                return freeMemoryIfNeeded();    /* use eviction strategy, i.e. deleting keys or OOM */
-        }
-    } else {
-        /* use eviction strategy, i.e. deleting keys or OOM */
-        return freeMemoryIfNeeded();
+        // free memory to Rocksdb failed 
+        if (server.maxmemory_only_for_rocksdb)
+            /* can not eviction, so check memory again */
+            return getMaxmemoryState(NULL, NULL, NULL, NULL);
+            
+        // otherwise, use the folloing eviction way to make room for memory
     }
+        
+    /* use eviction strategy, i.e. deleting keys or OOM */
+    return freeMemoryIfNeeded();
 }
