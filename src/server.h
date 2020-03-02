@@ -1425,6 +1425,7 @@ struct redisServer {
     struct RockRdbParams *rockRdbParams;
     int inSubChildProcessState;
     int alreadyInitHotKeys;     /* flag to indicate whether the lazy hot keys initialized */
+    unsigned int maxHopeHotKeys;    /* when lru/lfu eviction, how many max keys (hopefully) with value in memory we want to keep */
 };
 
 typedef struct pubsubPattern {

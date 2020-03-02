@@ -33,7 +33,6 @@ Redis的命令非常丰富，请参考：https://redis.io/commands
 * multi
 * discard
 * ttl
-* touch
 * pttl
 * persist
 * watch
@@ -145,3 +144,8 @@ client A, block on 两个key， 比如k1，k2
 但k2读值成功之前，有一个新客户向磁盘里写更多的东西，同时也产生了k1
 这时，并不导致Client A的解锁，而需要k2读取成功后才会计算解锁
 
+### Script(LUA)相关的命令
+
+比如：EVAL
+
+因为Redis要求Script执行中不可中断，因此，像Transaction一样，如果里面有大量的命令，而且命令又恰巧需要访问磁盘，那么，这个Script或Transaction会非常慢，而且会拖累其他的客户端。

@@ -21,7 +21,11 @@ git submodule update
 cd src
 make
 ```
-如果成功，会在编译目录redrock/src下看到redis-server这个文件。是的，RedRock缺省执行文件就是redis一样
+如果成功，会在编译目录redrock/src下看到redis-server这个文件。
+
+是的，RedRock缺省执行文件就是redis一样
+
+注意：为了和老的C兼容，因此会有大量的warning出现，但不用担心这个。
 ```
 ls -all redis-server
 ```

@@ -1187,7 +1187,7 @@ int dumpValueToRockIfNeeded() {
         long long total_hot_keys = 0;
         for (int i = 0; i < server.dbnum; ++i) {
             total_hot_keys += dictSize(server.db[i].hotKeys);
-            if (total_hot_keys <= 1000) return C_ERR;       // try eviction with at least 1K keys alive
+            if (total_hot_keys <= server.maxHopeHotKeys) return C_ERR;       // try eviction with at least 1K keys alive
         }
     }
 

@@ -463,7 +463,7 @@ def _check_lfu_for_eviction():
 
     print(f'eviction total = {evict_total}, eviction of lfu = {evict_total}, err = {err_count}')
     print(f'eviction Per mille = {int(1000*evict_total/3_000_000)} , '
-          f'eviction lfu Per mille = {int(1000*evict_count_lfu/1_000)}%')
+          f'eviction lfu Per mille = {int(1000*evict_count_lfu/1_000)}')
 
 
 def _main():
@@ -479,7 +479,7 @@ def _main():
     #_check_lua2()
     #_check_lru()
     #_warm_lfu_for_eviction_check()
-    #_check_lfu_for_eviction()
+    _check_lfu_for_eviction()
     pass
 
 

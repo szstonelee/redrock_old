@@ -10,11 +10,11 @@ RedRock and all its dependencies are based on C/C++, so you need
 
 In MAC, use brew. In Linux, use apt or apt-get to intall these softwares.
 
-NOTE: Right now, in Linux, it does not use Jemelloc but libc, because I have not make makefile fit for Jemalloc.
+NOTE: Right now, in Linux, it does not use Jemelloc but libc, because I have not figure out Jemalloc in makefile yet.
 
-## Setup
+## First Setup
 
-Clone RedRock from github, download submodule Rocksdb, then make.
+Clone RedRock from Github, download submodule Rocksdb, then make.
 ```
 git clone https://github.com/szstonelee/redrock redrock
 cd redrock
@@ -23,7 +23,11 @@ git submodule update
 cd src
 make all
 ```
-If no error shows, you will see an execute file named as redis-server in redrock/src folder.
+If no error shows and a LOGN time of compilation with a lot of warnings, 
+
+you will see an execute file named as redis-server in redrock/src folder.
+
+NOTE: do not worry about the warnings, the makefile is for comparatible with old C(C99).
 ```
 ls -all redis-server
 ```
@@ -36,7 +40,7 @@ Use client tools like redis-cli, and test the basic commands like set/get.
 
 ## Compile Options
 ### From the bottom including every library
-If you want everything new from beginning, including compiling each base library like Rocksdb, Snapy
+If you want everything new from beginning, including compiling each base library like Rocksdb, Snappy
 ```
 cd src
 make distclean
@@ -44,7 +48,7 @@ make
 ```
 Tip:  
 When compiling the above way like borning baby, it takes LONG time.  
-You can take a rest to have a cup of coffee.
+You can make a rest to have a cup of coffee concurrently.
 ### Only compile all source codes in src folder
 We do not need to compile from the bottom every time, because the dependency libraries are stable.
 

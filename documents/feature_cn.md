@@ -6,9 +6,13 @@
 
 MAC OS和Linux(我在Mac上通过VM模拟的Linux)应该可以。其他我不是太清楚。
 
+## 支持Redis协议
+
+是的。因此，你客户端的代码和配置都不用改。
+
 ## 支持所有的Redis Commmands
 
-Yes. [你可以参考命令集和注意事项](commands_cn.md)
+Yes(除了module相关的命令). [你可以参考命令集和注意事项](commands_cn.md)
 
 ## 支持所有的Redis数据结构
 
@@ -71,7 +75,7 @@ Yes。[需要留意一个细节](commands_cn.md)
 Yes。
 
 ## 支持统计
-Yes。我们还增加了一个自己的统计。
+Yes。[我们还增加了一个自己的统计。](stat_cn.md)
 
 ## 支持SlowLog
 Yes。但注意：读盘的时延一般而言会远远高于正常命令的内存执行时间（除非是Keys这样的全浏览命令）。
