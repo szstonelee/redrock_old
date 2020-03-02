@@ -272,6 +272,7 @@ def _check_transaction(max_keys: int = 1_000_000):
     print(f"Success for transaction! multi count = {multi_count}")
 
 
+# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 def _warm_up_for_block(max_keys: int = 50_000):
     r = redis.StrictRedis(connection_pool=POOL)
     r.flushall()
@@ -477,9 +478,8 @@ def _main():
     #_check_transaction()
     #_check_lua1()
     #_check_lua2()
-    #_check_lru()
     #_warm_lfu_for_eviction_check()
-    _check_lfu_for_eviction()
+    #_check_lfu_for_eviction()
     pass
 
 
