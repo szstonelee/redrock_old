@@ -20,4 +20,17 @@ cat /sys/kernel/mm/transparent_hugepage/enabled
 ```
 看到其值为never时，测试才可能全部通过
 
+有两个方法：
+1. 临时方法
+```
+sudo su
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+```
+2. 永久解决
+编辑 /etc/default/grub，在文件里加入
+```
+GRUB_CMDLINE_LINUX_DEFAULT="transparent_hugepage=never quiet splash"
+```
+然后，运行 update-grub。最后，重启整个Linux
+
 ## 

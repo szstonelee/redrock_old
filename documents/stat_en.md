@@ -16,4 +16,10 @@ NOTE: Because the latency of disk access, slowlog is not that meaningful.
 
 ## New Stats for RedRock
 
-hold on
+in redis-cli, or any redis client, issue the following command
+```
+rock report
+```
+From the server console, you can get how many and percentage of the keys' value in disk.
+
+NOTE: The command will scan all keys, but no access to disk. It will take a little while.
