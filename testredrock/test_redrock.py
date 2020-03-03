@@ -312,7 +312,7 @@ def _check_block(max_keys: int = 50_000):
     print(f"Success for block!")
 
 
-def _check_rdb():
+def _check_rdb_or_aof():
     # first, run _warm_up_with_string() with
     # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
     # then redis-cli, bgsave, it takes time (you need check the save success result, i.e. "DB saved on disk"
@@ -321,6 +321,8 @@ def _check_rdb():
     # then, ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
     # then _check_all_key_in_string()
     # repeat above but use save (not fork())
+    # for aof, use BGREWRITEAOF to create appendonly.aof, then
+    # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --appendonly yes
     pass
 
 
@@ -469,7 +471,7 @@ def _check_lfu_for_eviction():
 
 def _main():
     #_warm_up_with_string()
-    #_check_all_key_in_string()
+    _check_all_key_in_string()
     #_warm_up_with_all_data_types()
     #_check_all_key_in_data_types()
     #_check_pipeline()

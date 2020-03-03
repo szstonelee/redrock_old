@@ -2914,6 +2914,7 @@ void initServer(void) {
     server.rockRdbParams = NULL;
     server.inSubChildProcessState = 0;  // for Main thread(&process) always False
     server.alreadyInitHotKeys = 0;  // false
+    server.isRdbServiceThreadRunning = 0;   // false
 }
 
 /* Some steps in server initialization need to be done last (after modules
@@ -4739,7 +4740,11 @@ int redisFork() {
     long long start = ustime();
     if ((childpid = fork()) == 0) {
         /* Child */
-        server.inSubChildProcessState = 1;
+
+        // we set the flag only in child process
+        // so other func can know the state of in-which process, parent or child, 
+        // it is critical for Rocksdb visit 
+        server.inSubChildProcessState = 1;   
         if (server.rockRdbParams)
             initForRockInRdbProcess(server.rockRdbParams);
 
@@ -5076,6 +5081,14 @@ int main(int argc, char **argv) {
     redisAsciiArt();
     checkTcpBacklogSettings();
 
+    if (server.enable_rocksdb_feature) {
+        /* if rocksdb can not be initialized, e.g. the rocksdb folder's permission, we will exit */
+        if (init_rocksdb(server.dbnum, server.rockdb_dir) == -1) {
+            serverLog(LL_WARNING, "init rocksdb failed!");
+            exit(1);
+        }
+    }
+
     if (!server.sentinel_mode) {
         /* Things not needed when running in Sentinel mode. */
         serverLog(LL_WARNING,"Server initialized");
@@ -5114,13 +5127,6 @@ int main(int argc, char **argv) {
     /* Warning the user about suspicious maxmemory setting. */
     if (server.maxmemory > 0 && server.maxmemory < 1024*1024) {
         serverLog(LL_WARNING,"WARNING: You specified a maxmemory value that is less than 1MB (current value is %llu bytes). Are you sure this is what you really want?", server.maxmemory);
-    }
-
-    if (server.enable_rocksdb_feature) {
-        if (init_rocksdb(server.dbnum, server.rockdb_dir) == -1) {
-            serverLog(LL_WARNING, "init rocksdb failed!");
-            exit(1);
-        }
     }
 
     aeSetBeforeSleepProc(server.el,beforeSleep);

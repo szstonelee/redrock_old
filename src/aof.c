@@ -1305,6 +1305,7 @@ int rewriteAppendOnlyFileRio(rio *aof) {
     size_t processed = 0;
     int j;
 
+    robj *rockVal = NULL;
     for (j = 0; j < server.dbnum; j++) {
         char selectcmd[] = "*2\r\n$6\r\nSELECT\r\n";
         redisDb *db = server.db+j;
@@ -1325,9 +1326,11 @@ int rewriteAppendOnlyFileRio(rio *aof) {
             keystr = dictGetKey(de);
             o = dictGetVal(de);
 
+            rockVal = NULL;
             if (o == shared.valueInRock) {
                 // if the value is in rocksdb, we need reload and replace it
-                robj *rockVal = loadValFromRockForRdb(j, keystr);
+                rockVal = loadValFromRockForRdb(j, keystr);
+                serverAssert(rockVal);
                 o = rockVal;
             }
 
@@ -1370,6 +1373,9 @@ int rewriteAppendOnlyFileRio(rio *aof) {
                 processed = aof->processed_bytes;
                 aofReadDiffFromParent();
             }
+
+            /* we need delete the val to free memory for AOF backup */
+            if (rockVal) decrRefCount(rockVal); 
         }
         dictReleaseIterator(di);
         di = NULL;
@@ -1378,6 +1384,7 @@ int rewriteAppendOnlyFileRio(rio *aof) {
 
 werr:
     if (di) dictReleaseIterator(di);
+    if (rockVal) decrRefCount(rockVal);
     return C_ERR;
 }
 
@@ -1585,6 +1592,11 @@ int rewriteAppendOnlyFileBackground(void) {
     pid_t childpid;
 
     if (hasActiveChildProcess()) return C_ERR;
+    if (server.isRdbServiceThreadRunning) {
+        serverLog(LL_NOTICE, "rewriteAppendOnlyFileBackground(), rdb service thread is running!");
+        return C_ERR;
+    }
+
     if (aofCreatePipes() != C_OK) return C_ERR;
     openChildInfoPipe();
     if ((childpid = redisFork()) == 0) {

@@ -852,7 +852,7 @@ void _rockPipeReadHandler(struct aeEventLoop *eventLoop, int fd, void *clientDat
     read(fd, tmpUseBuf, 1);     /* maybe unblock the rockdb thread by read the pipe */    
 }
 
-/* for rdb backup  */
+/* for rdb & aof backup  */
 robj* loadValFromRockForRdb(int dbid, sds key) {
     // We tempory call the func for rdb test
     // but it is not correct, because rdb is in another pid
@@ -862,6 +862,7 @@ robj* loadValFromRockForRdb(int dbid, sds key) {
 
     if (server.inSubChildProcessState) {
         // serverLog(LL_NOTICE, "In subprocess envirenmont");
+        // because we are in child process to get rocksdb val, we need a client/server mode
         sds val = requestSnapshotValByKeyInRdbProcess(dbid, key, server.rockRdbParams);
         if (val) {
             o = desObject(val, sdslen(val));
@@ -871,8 +872,7 @@ robj* loadValFromRockForRdb(int dbid, sds key) {
             serverLog(LL_WARNING, "Rocksdb string val is null in child process!");
         }
     } else {    
-        // for main process, we get rocksdb val in main thread for command like 'save'
-        // _doRockJobInRockThread(dbid, key, &o);
+        // for call in sync way in main thread of main process, like 'save' command 
         _doRockRestoreInMainThread(dbid, key, &o);
     }
     

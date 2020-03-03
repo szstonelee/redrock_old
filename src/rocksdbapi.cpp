@@ -189,6 +189,11 @@ void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val
         return;
     }
 
+    if (!s.ok()) {
+        std::cout << "rockapi read status = " << s.ToString() << std::endl;
+        std::cout << "key len = " << key_len << ", key = " << key << std::endl;
+        std::cout << "val len = " << val_len << ", val = " << val << std::endl;
+    }
     assert(s.ok());
 
     void* new_heap_memory = zmalloc(rock_val.size());
@@ -218,6 +223,11 @@ void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **va
         return;
     }
 
+    if (!s.ok()) {
+        std::cout << "rockapi snapshot read status = " << s.ToString() << std::endl;
+        std::cout << "key len = " << key_len << ", key = " << key << std::endl;
+        std::cout << "val len = " << val_len << ", val = " << val << std::endl;
+    }
     assert(s.ok());
 
     void* new_heap_memory = zmalloc(rock_val.size());
@@ -237,5 +247,11 @@ void rocksdbapi_write(int dbi, char *key, size_t key_len, char *val, size_t val_
     write_opts.disableWAL = true;
     rocksdb::Status s = 
         db->Put(write_opts, rocksdb::Slice(key, key_len), rocksdb::Slice(val, val_len));
+    
+    if (!s.ok()) {
+        std::cout << "rockapi write status = " << s.ToString() << std::endl;
+        std::cout << "key len = " << key_len << ", key = " << key << std::endl;
+        std::cout << "val len = " << val_len << ", val = " << val << std::endl;
+    }    
     assert(s.ok());
 }

@@ -1426,6 +1426,7 @@ struct redisServer {
     int inSubChildProcessState;
     int alreadyInitHotKeys;     /* flag to indicate whether the lazy hot keys initialized */
     unsigned int maxHopeHotKeys;    /* when lru/lfu eviction, how many max keys (hopefully) with value in memory we want to keep */
+    volatile int isRdbServiceThreadRunning; /* a flag to give fork() whether rdb service thread is running*/
 };
 
 typedef struct pubsubPattern {

@@ -169,6 +169,8 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
         // response
         ret = _write_pipe_by_length(params->pipe_response[1], (char*)&val_len, sizeof(size_t));
         if (ret == -1) {
+            /* if child process is killed like first config set appendonly no, 
+             * then quickly config set appendonly yes,  we get this error, but it is OK */
             serverLog(LL_WARNING, "rdb service thread: write response val len, write error!");
             goto err;
         }
@@ -187,10 +189,12 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
 
     serverAssert(key == NULL && db_val == NULL);
     _closeRockRdbParamsPipes(params);
-    serverLog(LL_NOTICE, "rdb service exit successfully! rdb service thread id = %d", (int)pthread_self());
     *(params->myself) = NULL;
     zfree(params);
     rocksdbapi_releaseAllSnapshots();
+    serverLog(LL_NOTICE, "rdb service exit successfully with close snapshot! rdb service thread id = %d", (int)pthread_self());
+    serverAssert(server.isRdbServiceThreadRunning == 1);
+    server.isRdbServiceThreadRunning = 0;
     return NULL;    // thread exit with success
 
 err:
@@ -201,6 +205,8 @@ err:
     *(params->myself) = NULL;
     zfree(params);
     rocksdbapi_releaseAllSnapshots();
+    serverAssert(server.isRdbServiceThreadRunning == 1);
+    server.isRdbServiceThreadRunning = 0;
     return NULL;    // thread exit with error
 }
 
@@ -276,7 +282,13 @@ int initRockSerivceForRdbInMainThread(RockRdbParams *params) {
         return -1;
     }
 
+    /* after the rdb service thread is created, we need set the flag, 
+     * so fork() will use it to know when to start  */
+    serverAssert(server.isRdbServiceThreadRunning  == 0);
+    server.isRdbServiceThreadRunning = 1;   
+
     rocksdbapi_createSnapshots();
+    serverLog(LL_NOTICE, "we start a rdb thread service with read-only snapshot for child process!");
     
     return 1;    
 }

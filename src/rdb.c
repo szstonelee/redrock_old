@@ -1017,6 +1017,7 @@ int rdbSaveKeyValuePair(int dbid, rio *rdb, robj *key, robj *val, long long expi
     robj *rockVal = NULL;
     if (val == shared.valueInRock) {
         rockVal = loadValFromRockForRdb(dbid, key->ptr);
+        serverAssert(rockVal);
         val = rockVal;      // replace the pointer
         serverLog(LL_DEBUG, "rdb.c, rdbSaveKeyValuePair, dbid = %d, valueInRock, key = %s", dbid, key->ptr);
     }
@@ -1060,6 +1061,9 @@ int rdbSaveKeyValuePair(int dbid, rio *rdb, robj *key, robj *val, long long expi
     if (server.rdb_key_save_delay)
         usleep(server.rdb_key_save_delay);
 
+    /* we need delete the value to free memory which is from Rocksdb */
+    if (rockVal) decrRefCount(rockVal);
+    
     return 1;
 
 err:
@@ -1357,6 +1361,10 @@ int rdbSaveBackground(char *filename, rdbSaveInfo *rsi) {
     pid_t childpid;
 
     if (hasActiveChildProcess()) return C_ERR;
+    if (server.isRdbServiceThreadRunning) {
+        serverLog(LL_NOTICE, "rdbSaveBackground(), no child process, but rdb thread is running!");
+        return C_ERR;
+    }
 
     server.dirty_before_bgsave = server.dirty;
     server.lastbgsave_try = time(NULL);
@@ -2028,6 +2036,8 @@ void rdbLoadProgressCallback(rio *r, const void *buf, size_t len) {
     }
 }
 
+#define CHECK_MEM_FOR_ROCK_MAX_TIMES 30
+
 /* Load an RDB file from the rio stream 'rdb'. On success C_OK is returned,
  * otherwise C_ERR is returned and 'errno' is set accordingly. */
 int rdbLoadRio(rio *rdb, int rdbflags, rdbSaveInfo *rsi) {
@@ -2055,6 +2065,8 @@ int rdbLoadRio(rio *rdb, int rdbflags, rdbSaveInfo *rsi) {
     /* Key-specific attributes, set by opcodes before the key type. */
     long long lru_idle = -1, lfu_freq = -1, expiretime = -1, now = mstime();
     long long lru_clock = LRU_CLOCK();
+
+    int rdbLoadKeyCount = 0;
 
     while(1) {
         robj *key, *val;
@@ -2257,6 +2269,20 @@ int rdbLoadRio(rio *rdb, int rdbflags, rdbSaveInfo *rsi) {
             /* Decrement the key refcount since dbAdd() will take its
              * own reference. */
             decrRefCount(key);
+
+            /* when load data from disk or stream to db->dict,
+             * if RocksdbEnabled, we need to check the memory and dump some values to disk
+             * but we do not check for every key. Instead, we check every CHECK_MEM_FOR_ROCK_MAX_TIMES times
+             * because usually this func is called in ini time like server start or replication 
+             * this way, it is more efficient */
+            if (isRockFeatureEnabled()) {
+                ++rdbLoadKeyCount;
+                if (rdbLoadKeyCount >= CHECK_MEM_FOR_ROCK_MAX_TIMES) {
+                    rdbLoadKeyCount = 0;
+                    dumpValueToRockIfNeeded();
+                    /* NOTE: we do not call freeMemoryIfNeeded() to evict because the func is ann init func */
+                }
+            }
         }
         if (server.key_load_delay)
             usleep(server.key_load_delay);
@@ -2405,6 +2431,10 @@ int rdbSaveToSlavesSockets(rdbSaveInfo *rsi) {
     int pipefds[2];
 
     if (hasActiveChildProcess()) return C_ERR;
+    if (server.isRdbServiceThreadRunning) {
+        serverLog(LL_NOTICE, "rdbSaveToSlavesSockets(), rdb service thread is running!");
+        return C_ERR;
+    }
 
     /* Even if the previous fork child exited, don't start a new one until we
      * drained the pipe. */
