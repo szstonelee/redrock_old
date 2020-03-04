@@ -12,11 +12,20 @@ import redis.clients.util.Pool;
 class JedisUtils {
     private static Pool<Jedis> jedisPool;
     private static final Logger logger = LoggerFactory.getLogger(JedisUtils.class);
+    private static int redisPort = 6379;
 
     private JedisUtils() {}
 
+    static void setRedisPort(int redisPort) {
+        JedisUtils.redisPort = redisPort;
+    }
+
+    static int getRedisPort() {
+        return JedisUtils.redisPort;
+    }
+
     private static void init() {
-        RedisConfig config = new RedisConfig();
+        RedisConfig config = new RedisConfig(JedisUtils.redisPort);
         JedisPoolConfig jedisConf = new JedisPoolConfig();
 
         jedisConf.setMaxTotal(config.maxTotalConnections);

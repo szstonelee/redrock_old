@@ -102,10 +102,14 @@ public class MainApp {
             KV_TOTAL = total<<10;
             QUEUE_LEN = KV_TOTAL>>2;
         }
+        if (args.length >= 3) {
+            int redisPort = Integer.parseInt(args[2]);
+            JedisUtils.setRedisPort(redisPort);
+        }
 
+        System.out.println("Redis port = " + JedisUtils.getRedisPort());
         System.out.println("Thread number = " + THREAD_NUMBER);
         System.out.println("KV total = " + KV_TOTAL);
-        System.out.println("queue len = " + QUEUE_LEN);
 
         List<KV> list = initWarmUp(KV_TOTAL);
 

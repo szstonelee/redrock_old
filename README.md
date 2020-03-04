@@ -75,9 +75,9 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 [I focus on the worst condition performance, more details.](documents/performance_en.md)
 
-# Backup and Persistence
+# Backup and Persistence, Replication
 
-[How backup and persist the whole dataset, memory data with most values in disk.](documents/persistence_en.md)
+[How backup and persist the whole dataset, or use replicaton, to avoid data lose, when most(maybe 99%) values not in memory.](documents/persistence_en.md)
 
 # Stats and Tools
 
