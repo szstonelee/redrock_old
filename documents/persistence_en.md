@@ -10,7 +10,7 @@ First and most, do not use the Rocksdb folder for backup. [About the Rocksdb fol
 
 The values in memory do not be dumped to the rocksdb disk. You will lose your data if you use Rocksdb folder.
 
-You can use three ways to security your data. 
+You can use three ways to secure your data. 
 
 For backup, it is RDB or AOF, like the traditional Redis backup ways, check more about how Redis backup data using RDB or AOF, [click here to Redis website for more details about RDB/AOF](https://redis.io/topics/persistence). 
 
@@ -52,7 +52,7 @@ When RedRock start without RedRock feature, if a backup file, rdb or aof in the 
 
 It is the same way as Redis. [You can check Redis document for more details.](https://redis.io/topics/persistence)
 
-So be careful! If you backup a file where a lot of values come from disk, the dataset in the backup file could be huge. When you start RedRock without RedRock feature, it will load the huge file to memory and eat up all your memory.
+So be careful! If you backup a file where a lot of values coming from disk, the dataset in the backup file could be huge. When you start RedRock without RedRock feature, it will load the huge file to memory and eat up all your memory.
 
 ## Restore a backup when RedRock start with RedRock feature enabled
 

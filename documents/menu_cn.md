@@ -66,9 +66,9 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 
 [在最坏的情况下的性能表现](performance_cn.md)
 
-# 备份（持久化）
+# 备份（持久化）还有同步
 
-[整个数据集如何备份](persistence_cn.md)
+[这些都是为了你的数据安全，点这里了解更多](persistence_cn.md)
 
 # 统计和工具
 
