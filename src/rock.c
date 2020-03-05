@@ -69,8 +69,7 @@ void _rockKeyReport() {
     dictIterator *di;
 
     long long all_total = 0;
-    int max_other_print =  3;
-    int other_count = 0;
+    long long other_count = 0;
     for (int i = 0; i < server.dbnum; ++i) {
         long total = 0, rock = 0, share = 0, stream = 0;
         int print_one_key = 0;
@@ -96,10 +95,6 @@ void _rockKeyReport() {
                 ++stream;
             } else {
                 ++other_count;
-                if (other_count <= max_other_print) {
-                    serverLog(LL_NOTICE, "no-rock-key: key = %s, val type = %d, encoding = %d, refcount = %d", 
-                        dictGetKey(de), o->type, o->encoding, o->refcount);
-                }
             }
         }
         dictReleaseIterator(di);
@@ -107,11 +102,11 @@ void _rockKeyReport() {
         all_total += total;
         if (total) {
             int rockPercent = rock * 100 / total;
-            serverLog(LL_NOTICE, "db=%d, key total = %ld, value in rock = %ld, rock percentage = %d%%, hot key = %lu, shared = %lu, stream = %lu", 
+            serverLog(LL_NOTICE, "db=%d, key total = %ld, rock key = %ld, percentage = %d%%, hot key = %lu, shared = %lu, stream = %lu", 
                 i, total, rock, rockPercent, dictSize(server.db[i].hotKeys), share, stream);
         }
     }
-    serverLog(LL_NOTICE, "all db key total = %lld", all_total);
+    serverLog(LL_NOTICE, "all db key total = %lld, other total = %lld", all_total, other_count);
 }
 
 void _printRockKeys(long limit) {

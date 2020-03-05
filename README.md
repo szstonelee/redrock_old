@@ -6,7 +6,7 @@
 RedRock is a combination of [Redis](https://github.com/antirez/redis) and [Rocksdb](https://rocksdb.org/).
 
 ## Why
-Redis is a wonderful NOSQL based on memory. But memory costs more than disk. We hope something,
+Redis is a wonderful NoSQL based on memory. But memory costs more than disk. We hope something,
 * Same fast and strong as Redis
 * Extend to disk (HDD or SSD)
 
@@ -21,7 +21,7 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 ## RedRock Features
 * Pure Redis. When no enable disk, RedRock is running almost the same codes as Redis
-* Use Redis protocol, so no need to adjust one line of your client codes or config files
+* Use Redis Protocol, so no need to adjust one line of your client codes or config files
 * Keep all keys in memory but only hot key's value in memory with most other values in disk
 * Your dataset volume can be one hundred times of your memory
 * Support all Redis commands except module's commands

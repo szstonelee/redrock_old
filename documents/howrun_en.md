@@ -28,6 +28,8 @@ The default value for enable-rocksdb-feature is "no". You need set it to "yes" e
 ### 3. rockdbdir
 It is for which folder where RedRock store data in disk using Rocksdb engine.
 
+#### default value
+
 It is optional and the default value for rockdbdir is "/opt/redrock_rocksdb/".
 
 NOTE:
@@ -35,11 +37,27 @@ NOTE:
 + The rockdbdir folder is only for temporary usage. Every time when RedRock starts, it deletes the sub folders in it.
 + After redis-server stop, you can not use the rockdbdir folder as a backup because it does not include the key/value in memory. [check backup for RedRock for more details](persistence_en.md)
 + If you want a real backup, please use RDB/AOF. Reference：[Backup and Persistence](persistence_en.md)
-+ You need the pemission for the folder. If you do not have the permission, RedRock will fail to start with an error telling you the failure of folder creation. You can set permission for the folder or just 
+
+#### Linux folder permission
+
+When in default value, the /opt/redrock_rocksdb/ folder does not have right persission for RedRock to run, 
+
+You can see this error!
 ```
-sudo ./redis-server <Other parameters, you can check the example below>
+rockapi write status = IO error: while open a file for lock: /opt/redrock_rocksdb/0/LOCK: Permission denied
 ```
-You only need run sudo once. When the folder is created, you can run redis-server without sudo next time.
+
+to solve this problem, you have three choices
+
+1. Use other folder which you have permission and set rockdbdir when RedRock starts
+2. sudo to start your RedRock, like
+```
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
+```
+3. chmod your folder permission, like 
+```
+sudo chmod -R 777 /opt/redrock_rocksdb
+```
 
 ### 4. maxmemory-only-for-rocksdb
 This parameter is optional. The default value is "yes".
@@ -105,7 +123,10 @@ e.g. 3: 100M Max Memory and Eviction with LFU of at least 10K Keys
 
 ### Config file
 
-Please modify redis.conf, add enable-rocksdb-feature, rockdbdir, maxmemory-only-for-rocksdb. 
+Please modify redis.conf, add enable-rocksdb-feature, rockdbdir, maxmemory-only-for-rocksdb, max-hope-hot-keys. 
+```
+./redis-server redis.conf
+```
 Please reference：https://redis.io/topics/config
 
 ### Can not change online

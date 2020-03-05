@@ -18,11 +18,11 @@ ZSET_VAL_LEN = 100
 
 # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 # or
-# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --save ""
+# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-random
 # after success, run redis-cli, issue command 'rock keyreport'
 # if you see how many keys in disk, you can check one rock key in the report by command 'get'
 # the value for it is like '01234567....'
-# try using 1, 2, 3, 4 million for the two situaations
+# try using 1, 2, 3, 4 million for the two situations
 # when error exception: OOM command not allowed when used memory > 'maxmemory'
 def _warm_up_with_string(max_keys: int = 1_000_000):
     r = redis.StrictRedis(connection_pool=POOL)
@@ -471,7 +471,7 @@ def _check_lfu_for_eviction():
 
 def _main():
     _warm_up_with_string()
-    _check_all_key_in_string()
+    #_check_all_key_in_string()
     #_warm_up_with_all_data_types()
     #_check_all_key_in_data_types()
     #_check_pipeline()
