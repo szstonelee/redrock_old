@@ -46,6 +46,20 @@
 #include "rockrdb.h"
 #include "rocksdbapi.h"
 
+/* all rdb related codes goes here. We use 'rdb' name or tag, 
+ * but if you check Redis source code, aof/replication all use such feature related to rdb 
+ *  
+ * e.g. 
+ * When replication perform a full sync mode, it use rdb file for a start
+ * aof also has something like that. For command BGREWRITEAOF, it has a full backup for all dataset
+ * 
+ * The challenge for RedRock is that: 
+ * Redis use fork() for a child process and Rocksdb engine can not be shared in two process (except read-only)
+ * 
+ * We use a Client/Server mode for the problem. 
+ * Server is running in main process (in a single thread) for read Rocksdb
+ * Client is running in child process for request/end the service in main process.
+ * Process communication is based on IPC */
 
 /* read length of bytes from pipe file descriptor, 
  * return 1 if success read(including len==0), return 0 if pipe close, -1 if error */
@@ -293,54 +307,3 @@ int initRockSerivceForRdbInMainThread(RockRdbParams *params) {
     return 1;    
 }
 
-void _test_rdb_service() {
-    serverLog(LL_NOTICE, "redis main process id = %d", (int)getpid());
-
-    char test_key[] = "abc";
-    char test_val[] = "This is a test for key abc, really???...";
-    rocksdbapi_write(0, test_key, sizeof(test_key)-1, test_val, sizeof(test_val)-1);
-    serverLog(LL_NOTICE, "main thread init write key");
-
-    RockRdbParams *params = zmalloc(sizeof(RockRdbParams));
-
-    int ret;
-
-    ret = initRockSerivceForRdbInMainThread(params);
-
-    if (ret != 1) {
-        serverLog(LL_NOTICE, "fail init rdb srvice thread");
-        zfree(params);
-        return;
-    } 
-    
-    serverLog(LL_NOTICE, "success init rdb srvice thread, main thread id = %d", (int)pthread_self());
-
-    ret = fork();
-    if (ret == -1) {
-        serverLog(LL_NOTICE, "fork failed!");
-        zfree(params);
-        return ;
-    }
-
-    if (ret == 0) {
-        // child process
-        serverLog(LL_NOTICE, "rdb child process start, pid = %d", (int)getpid());
-        initForRockInRdbProcess(params);
-        serverLog(LL_NOTICE, "rdb child process init, pid = %d", (int)getpid());
-        sds key = sdsnew("abc");
-        serverLog(LL_NOTICE, "start to find key %s in child process, pid = %d", key, (int)getpid());
-        sds val = requestSnapshotValByKeyInRdbProcess(0, key, params);
-        if (val == NULL) 
-            serverLog(LL_NOTICE, "get NULL val in child rdb proces, pid = %d", (int)getpid());
-        else
-            serverLog(LL_NOTICE, "get val in child rdb proces, pid = %d, val = %s", (int)getpid(), val);        
-        serverLog(LL_NOTICE, "rdb child process clear before exit, pid = %d", (int)getpid());
-        clearForRockWhenExitInRdbProcess(params);
-        serverLog(LL_NOTICE, "rdb child process clear exit, pid = %d", (int)getpid());
-        _exit(0);
-    } else {
-        // parent process
-        wakeupRdbServiceThreadAfterForkInMainThread(params);
-        // params will be freed in rdb service thread when exit
-    }
-}

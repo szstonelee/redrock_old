@@ -33,10 +33,12 @@
 #include "bio.h"
 #include "latency.h"
 #include "atomicvar.h"
+
 #include "rock.h"
 #include "rockserdes.h"
 #include "rockrdb.h"
 #include "rockcmds.h"
+#include "rockhotkey.h"
 
 #include <time.h>
 #include <signal.h>
@@ -5083,7 +5085,7 @@ int main(int argc, char **argv) {
 
     if (server.enable_rocksdb_feature) {
         /* if rocksdb can not be initialized, e.g. the rocksdb folder's permission, we will exit */
-        if (init_rocksdb(server.dbnum, server.rockdb_dir) == -1) {
+        if (initRocksdb(server.dbnum, server.rockdb_dir) == -1) {
             serverLog(LL_WARNING, "init rocksdb failed!");
             exit(1);
         }
@@ -5135,7 +5137,7 @@ int main(int argc, char **argv) {
     aeDeleteEventLoop(server.el);
 
     if (server.enable_rocksdb_feature)
-        teardown_rocksdb();
+        teardownRocksdb();
 
     return 0;
 }

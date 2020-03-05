@@ -41,16 +41,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ROCKCMDS_H
-#define __ROCKCMDS_H
+#ifndef __ROCKLUA_H
+#define __ROCKLUA_H
 
-/* API for server.c */
-void cmdCheckRockForOneKey(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockExcludeLastArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockForAllKeys(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockExcludeFirstArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockForZstore(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockForMigrate(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
+typedef struct scriptMaybeKey {
+    sds key;
+    int dbid;
+} scriptMaybeKey;
+
+void scriptWhenStartForRock();
+void scriptForBeforeEachCallForRock(client *c);
+void scirptForBeforeExitForRock();
 
 #endif
-

@@ -64,41 +64,41 @@
 #define ROCK_TYPE_HASH_ZIPLIST  13
 #define ROCK_TYPE_LIST_QUICKLIST 14
 
-typedef struct scriptMaybeKey {
-    sds key;
-    int dbid;
-} scriptMaybeKey;
+#if defined(__APPLE__)
+    #include <os/lock.h>
+    static os_unfair_lock spinLock;
+    // static os_unfair_lock spinLock = OS_UNFAIR_LOCK_INIT;
+    #define rocklock() os_unfair_lock_lock(&spinLock)
+    #define rockunlock() os_unfair_lock_unlock(&spinLock)
+
+#else
+    #include <pthread.h>
+    static pthread_spinlock_t spinLock;
+    #define rocklock() pthread_spin_lock(&spinLock)
+    #define rockunlock() pthread_spin_unlock(&spinLock)
+#endif
 
 /* API */
-void rock_print_debug();
-void rock_test_resume_rock();
 void checkCallValueInRock(client *c);
 void initRockPipe();
 void initZeroRockJob();
-void test_add_work_key(int dbid, char *key, size_t len);
-void checkThenResumeRockClient(client *c);
 void releaseRockKeyWhenFreeClient(client *c);
-int dumpValueToRockIfNeeded();
-void rockPoolAlloc(void);
 size_t getMemoryOfRock();
 robj* loadValFromRockForRdb(int dbid, sds key);
 
-int init_rocksdb(int dbnum, char *path);
-void teardown_rocksdb();
+int initRocksdb(int dbnum, char *path);
+void teardownRocksdb();
 
-void rock_test_read_rockdb(char *key);
-void rock_test_write_rockdb(char *val);
 size_t getMemoryOfRock();
 void initSpinLock();
-void addHotKeyIfNeed(redisDb *db, sds key, robj *val);
-void deleteHotKeyIfNeed(redisDb *db, sds key);
-void clearHotKeysWhenEmptyDb(redisDb *db);
 
 int isRockFeatureEnabled();
 
-void scriptWhenStartForRock();
-void scriptForBeforeEachCallForRock(client *c);
-void scirptForBeforeExitForRock();
+void checkRockForSingleCmd(client *c, list *l);
+void checkRockForMultiCmd(client *c, list *l);
+void checkThenResumeRockClient(client *c);
+void doRockRestoreInMainThread(int dbid, sds key, robj **val);
 
+void dumpValToRock(sds key, int dbid);
 
 #endif

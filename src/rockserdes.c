@@ -43,7 +43,19 @@
 
 #include "rock.h"
 #include "intset.h"
-// #include "lzf.h"    /* LZF compression library */
+
+/* This is for serialize/deserilize all data types of Redis,
+ * like String, Set, Hash, List, Zset
+ * 
+ * We do not serialize Stream becasue it is used ofen and need instance response
+ * 
+ * Redis use its coded way for persistence, so it serialize more type, like LUA scripts
+ * But for Rocksdb, it is temporary persistence, so it does not nedd to consider 
+ * 1. big/small endiness
+ * 2. LUA object/ Stream Object, which is temporary or instant object
+ * 
+ * The effiency for encoding the data types may be not as good as rdb encoding, 
+ * but I have no time for optimazation, i.e. the rdb encoding is too complicated for me */
 
 /* serializa robj type to sds, reference rdbSaveObjectType() */
 sds serObjectType(robj *o) {

@@ -53,7 +53,6 @@ typedef struct RockRdbParams {
     struct RockRdbParams **myself;
 } RockRdbParams;  
 
-void _test_rdb_service();
 void clearForRockWhenExitInRdbProcess(RockRdbParams *params);
 int initRockSerivceForRdbInMainThread(RockRdbParams *params);
 void initForRockInRdbProcess(RockRdbParams *params);

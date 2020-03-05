@@ -44,6 +44,8 @@
 #ifndef __ROCKSDBAPI_H
 #define __ROCKSDBAPI_H
 
+/* API for rock.c */
+
 void rocksdbapi_init(int dbnum, char *root_path);
 void rocksdbapi_teardown();
 

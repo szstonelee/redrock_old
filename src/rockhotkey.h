@@ -41,16 +41,23 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __ROCKCMDS_H
-#define __ROCKCMDS_H
+#ifndef __ROCKHOTKEY_H
+#define __ROCKHOTKEY_H
 
-/* API for server.c */
-void cmdCheckRockForOneKey(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockExcludeLastArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockForAllKeys(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockExcludeFirstArg(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockForZstore(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
-void cmdCheckRockForMigrate(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l);
+struct rockPoolEntry {
+    unsigned long long idle;    /* Object idle time (inverse frequency for LFU) */
+    sds key;                    /* Key name. */
+    sds cached;                 /* Cached SDS object for key name. */
+    int dbid;                   /* Key DB number. */
+};
 
-#endif
+void addHotKeyIfNeed(redisDb *db, sds key, robj *val);
+void deleteHotKeyIfNeed(redisDb *db, sds key);
+void clearHotKeysWhenEmptyDb(redisDb *db);
+int initHotKeys();
 
+void rockPoolAlloc(void);
+void rockPoolPopulate(int dbid, dict *sampledict, dict *keydict, struct rockPoolEntry *pool);
+int dumpValueToRockIfNeeded();
+
+# endif

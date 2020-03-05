@@ -470,11 +470,11 @@ def _check_lfu_for_eviction():
 
 
 def _main():
-    #_warm_up_with_string()
-    _check_all_key_in_string()
+    _warm_up_with_string()
+    #_check_all_key_in_string()
     #_warm_up_with_all_data_types()
     #_check_all_key_in_data_types()
-    #_check_pipeline()
+    _check_pipeline()
     #_warm_up_for_block()
     #_check_block()
     #_check_transaction()
