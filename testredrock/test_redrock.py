@@ -358,6 +358,8 @@ def _check_lua1(max_keys: int = 1_000_000):
         if res != check_val:
             raise Exception("val not correct!")
 
+    print(f"Success for lua1!")
+
 
 # run _warm_up_with_string() first
 def _check_lua2(max_keys: int = 1_000_000):
@@ -409,6 +411,8 @@ def _check_lua2(max_keys: int = 1_000_000):
                 raise Exception("lua return value not correct!")
             if thread_return_strings[i] != check_val:
                 raise Exception("thread value not correct!")
+
+    print(f"Success for lua2!")
 
 
 # run
@@ -470,7 +474,7 @@ def _check_lfu_for_eviction():
 
 
 def _main():
-    _warm_up_with_string()
+    #_warm_up_with_string()
     #_check_all_key_in_string()
     #_warm_up_with_all_data_types()
     #_check_all_key_in_data_types()
@@ -480,8 +484,8 @@ def _main():
     #_check_transaction()
     #_check_lua1()
     #_check_lua2()
-    #_warm_lfu_for_eviction_check()
-    #_check_lfu_for_eviction()
+    _warm_lfu_for_eviction_check()
+    _check_lfu_for_eviction()
     pass
 
 
