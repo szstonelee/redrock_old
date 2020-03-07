@@ -22,6 +22,12 @@ make test
 
 总共有52个步骤测试，这需要点时间。
 
+### Linux Jemalloc生效后，mem defrag测试通过不了
+
+我不知道。Redis源码也不过了这个测试（参考：https://github.com/antirez/redis）
+
+这不影响当前的功能和特性，所以不用太担心。我会继续关注这个问题。
+
 ### Linux下一个注意事项：Transparent Huge Pages(THP)
 
 很多Linux都一个缺省特性是打开的：Transparent Huge Pages.

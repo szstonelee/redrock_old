@@ -22,6 +22,12 @@ NOTE: when run make test, there should no redis-server is running, i.e. No 6379 
 
 The test has  52 test user cases. It takes a long time for all tests, and you can have a cup of coffee.
 
+### Linux mem defrag can not pass when Jemalloc
+
+I do not know why. The original Redis source code https://github.com/antirez/redis, does not pass right now.
+
+I will give it an attention. But every feature and function is OK right now. Do not worry.
+
 ### Linux Special Note for Transparent Huge Pages(THP)
 
 Some Linux has a default feature -- Transparent Huge Pages.

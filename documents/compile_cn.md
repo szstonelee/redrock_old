@@ -8,7 +8,7 @@
 
 在MAC下，参考brew，在Linux下，参考apt或apt-get
 
-NOTE: Linux下，当前还不是用Jemalloc，暂时还是用libc，因为我还没有改好makefile
+NOTE: Linux下，已经开始支持Jemalloc了。
 
 ## 下载和编译
 
