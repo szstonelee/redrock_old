@@ -474,8 +474,8 @@ def _check_lfu_for_eviction():
 
 
 def _main():
-    #_warm_up_with_string()
-    #_check_all_key_in_string()
+    _warm_up_with_string()
+    _check_all_key_in_string()
     #_warm_up_with_all_data_types()
     #_check_all_key_in_data_types()
     #_check_pipeline()
@@ -484,8 +484,8 @@ def _main():
     #_check_transaction()
     #_check_lua1()
     #_check_lua2()
-    _warm_lfu_for_eviction_check()
-    _check_lfu_for_eviction()
+    #_warm_lfu_for_eviction_check()
+    #_check_lfu_for_eviction()
     pass
 
 

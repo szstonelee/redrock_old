@@ -12,6 +12,16 @@ In MAC, use brew. In Linux, use apt or apt-get to intall these softwares.
 
 NOTE: Right now, in Linux, it does not use Jemelloc but libc, because I have not figure out Jemalloc in makefile yet.
 
+For Linux, we use Jemalloc, so you need build Jemalloc first
+```
+cd deps/jemalloc
+./autogen.sh
+make
+```
+You can check whether Jemalloc build succesfully by 
+```
+ls libs/libjemalloc.a
+```
 ## First Setup
 
 Clone RedRock from Github, download submodule Rocksdb, then make.

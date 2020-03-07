@@ -86,6 +86,16 @@ public class MainApp {
     }
 
     public static void main(String[] args) {
+        int count = 0;
+        MillionKeys millionKeys = new MillionKeys(100);
+        while(millionKeys.hasNext()) {
+            ++count;
+            if (count % 100000 == 0)
+                System.out.println(millionKeys.next());
+        }
+        System.out.println("count = " + count);
+        System.exit(1);
+
         // start sudo ./redis-server --maxmemory 500m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
         // java -jar target/metric-1.0.jar 2 2000 (26379）
         ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)

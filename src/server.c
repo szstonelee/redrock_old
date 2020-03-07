@@ -2908,6 +2908,14 @@ void initServer(void) {
     slowlogInit();
     latencyMonitorInit();
 
+    #if defined(USE_TCMALLOC)
+        serverLog(LL_NOTICE, "malloc using TCMALLOC");
+    #elif defined(USE_JEMALLOC)
+        serverLog(LL_NOTICE, "malloc using JEMALLOC");
+    #else
+        serverLog(LL_NOTICE, "malloc using libc");
+    #endif
+
     initSpinLock();
     initRockPipe();     /* init rock pipe and start the rock thread */
     server.rockJob.workKey = NULL;

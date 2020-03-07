@@ -43,8 +43,8 @@ MALLOC=libc
 ifneq ($(uname_M),armv6l)
 ifneq ($(uname_M),armv7l)
 ifeq ($(uname_S),Linux)
-	#MALLOC=jemalloc
-	MALLOC=libc
+	MALLOC=jemalloc
+	#MALLOC=libc
 endif
 endif
 endif
@@ -68,8 +68,8 @@ ifeq ($(USE_TCMALLOC_MINIMAL),yes)
 endif
 
 ifeq ($(USE_JEMALLOC),yes)
-	#MALLOC=jemalloc
-	MALLOC=libc
+	MALLOC=jemalloc
+	#MALLOC=libc
 endif
 
 ifeq ($(USE_JEMALLOC),no)
@@ -181,11 +181,11 @@ ifeq ($(MALLOC),tcmalloc_minimal)
 	FINAL_LIBS+= -ltcmalloc_minimal
 endif
 
-#ifeq ($(MALLOC),jemalloc)
-#	DEPENDENCY_TARGETS+= jemalloc
-#	FINAL_CFLAGS+= -DUSE_JEMALLOC -I../deps/jemalloc/include
-#	FINAL_LIBS := ../deps/jemalloc/lib/libjemalloc.a $(FINAL_LIBS)
-#endif
+ifeq ($(MALLOC),jemalloc)
+	DEPENDENCY_TARGETS+= jemalloc
+	FINAL_CFLAGS+= -DUSE_JEMALLOC -I../deps/jemalloc/include
+	FINAL_LIBS := ../deps/jemalloc/lib/libjemalloc.a $(FINAL_LIBS)
+endif
 
 ifeq ($(BUILD_TLS),yes)
     FINAL_CFLAGS+=-DUSE_OPENSSL $(OPENSSL_CFLAGS)

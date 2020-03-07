@@ -22,7 +22,7 @@ class WarmUp {
                     try {
                         jedis.set(item.key, item.val);
                         break;
-                    } catch (redis.clients.jedis.exceptions.JedisDataException eRedis) {
+                    } catch (redis.clients.jedis.exceptions.JedisDataException e) {
                         ++tryCount;
                     }
                 }
