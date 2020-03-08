@@ -39,6 +39,17 @@ If 99.99999% miss in memory, what is my real system performance?
 
 Please reference the program in metric sub folder, written in Java.
 
+```
+cd metric
+mvn package
+```
+
+The metric program support two kinds of test mode, mode1 and mode2.
+
+## Mode1: test only Read with validatation
+
+### Mode1: run RedRock
+
 First start RedRock using the following config parameters，
 
 You can reference: [How compile](compile_en.md)，[Config parameters manual](howrun_en.md)
@@ -47,11 +58,10 @@ You can reference: [How compile](compile_en.md)，[Config parameters manual](how
 ./redis-server --maxmemory 500m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 ```
 
-how metric compile and run
+### Mode1: how run metric
 ```
 cd metric
-mvn package
-java -jar target/metric-1.0.jar 2 2000
+java -jar target/metric-1.0.jar mode1 2 2000 6379
 ```
 
 About the parameters of the metric program:
@@ -60,9 +70,11 @@ About the parameters of the metric program:
 
 * Second parameter 2000, meaning 2000K key/value pair entries.
 
+* third parameter, is the redis port. this parameter is optional.
+
 It will take a while for the test. You can have a cup of coffee.
 
-## Metric Results
+### Mode1: metric results
 
 + 95% key's value in disk. In redis-cli, such command can get the result 
 ```
@@ -73,6 +85,39 @@ rock report
 + rps is around 5K. 95% latency below 1ms.
 
 As a comparsion, when I run the metric again a real redis. rps is about 60K.
+
+## Mode2: test read with write
+
+This time, we do not care validation. We believe the data is correct. 
+
+Now we test something like Cache.
+
+We warm up the RedRock with some key/value with expire TTL. Then the metric program try to start several threads to visit the RedRock like Cache. Each thread will try to at the speed 1 K rps with pipeline of ten. Key size is between 20 - 200 bytes. Value size is between 200 - 2000 bytes. If every thread can keep the rate of 1K rps, the program will add one more thread every minute. If it can not maintain the load for each thread to keep 1 Krps, it will decrease one thread. So you can conclude how many rps your Cache will support. You can specify the write percentage. If write == 1, it means 10% write of total load.
+
+### Mode2: run RedRock
+
+```
+./redis-server --maxmemory <x>000m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+```
+x: 1 - anything you want, if x == 1, it means 1G memory.
+
+If 1 G memory, it can support 1 million with around 40% key/value in disk. 2 million with around 80% key/value. 3 million around 90%
+
+Check the followong 'how run metric' for how config.
+
+### Mode2: how run metric
+```
+cd metric
+java -jar target/metric-1.0.jar mode2 2 5 6379
+```
+The first parameter, is how many million key/value in the Cache.
+The second parameter, is how many thread when start. 
+The third parameter, is the Redis server port. It is optional.
+
+### Mode3: metric results
+
+the following table:
+
 
 ## Excpect other test cases
 
