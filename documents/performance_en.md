@@ -10,16 +10,16 @@ Best situation lies.
 
 This year, when I first used SSD to improve a cache system, I thought it was a easy job because I checked a lot of metric reports online which told me that it is easy to achive Million IOPS and nearly 1G Bps throughput for SSD. 
 
-But they lies.
+But they lie.
 
 It is reaonable for a hardware merchant to lie because it is a business.
 
-But for our software engineer, we also have pressure to lie or only show good metrics.
+But for our software engineer, we also have pressures to lie or only show good metrics.
 
 For selling, for community fame, or for promotion. Who knows?
 
-If in a best situation of 99.99999% key/value visits hitting the memory, even with 99.99999% keys' value in disk,
-I could say RedRock is just as fast as Redis (because it is nearly a Redis user case!!!) 
+If in a best situation, with 99.99999% key/value visits hitting the memory, even with 99.99999% keys' value in disk,
+I could say RedRock is just as fast as Redis because it is nearly a Redis user case. 
 
 But it does not make sense. We need to consider the bad or worst situation.
 
@@ -27,13 +27,13 @@ If 99.99999% miss in memory, what is my real system performance?
 
 ## Test Enviroment
 
-1. We hope most key's value in disk, at least 90%. (I tested in 95%)
+1. We hope most key's value in disk, at least 90%. (Sometimes I tested in 99%)
 2. We hope visits are random for all keys. No specific hot keys with its value living in memory for a long time.
 3. Page cache for OS can not be high. Otherwise, reading from disk is actually reading from memory.
 4. Key is small than value. Key size random from 20 to 200 bytes. Value size random from 200 to 2000 bytes.
 5. Does not consider short connection. 
-6. From my specific Mac, I set maxmemory of 500M for my test.
-7. My Mac 16G DDR memory, 4 Core 2.2GHz Intel i7, 250G PCI SSD.
+
+My Mac 16G DDR memory, 4 Core 2.2GHz Intel i7, 250G PCI SSD.
 
 ## Compile Metric Program
 
@@ -46,7 +46,7 @@ mvn package
 
 The metric program support two kinds of test mode, mode1 and mode2.
 
-## Mode1: test only Read with validatation
+## Mode1: test only reads with value validatation
 
 ### Mode1: run RedRock
 
@@ -66,21 +66,21 @@ java -jar target/metric-1.0.jar mode1 2 2000 6379
 
 About the parameters of the metric program:
 
-* First parameter 2，meaning 2 concurrent threads.
+* First parameter, i.e. 2，meaning 2 concurrent threads.
 
-* Second parameter 2000, meaning 2000K key/value pair entries.
+* Second parameter, i.e. 2000, meaning 2000K key/value pair entries.
 
-* third parameter, is the redis port. this parameter is optional.
+* third parameter, i.e. 6379, is the redis port. This parameter is optional with default value 6379.
 
 It will take a while for the test. You can have a cup of coffee.
 
 ### Mode1: metric results
 
-+ 95% key's value in disk. In redis-cli, such command can get the result 
++ 95% key's value in disk. You can use 'redis-cli', run such command to get the result 
 ```
 rock report
 ```
-+ Page cache for OS may be low, because a lot of memroy is used by my browser, IDE and the metric program.
++ Page cache for OS needs to to be low, usually around 1G. My browser, IDE, VM and the metric program used a lot of memory.
 + It is the best result for 2 thread for my Mac. More threads mean more pressures and worse results.
 + rps is around 5K. 95% latency below 1ms.
 
