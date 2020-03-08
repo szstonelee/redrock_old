@@ -9,15 +9,15 @@ You need to be patient and figour out what is the problem.
 ## Enviroment for Compilation
 
 RedRock and all its dependencies are based on C/C++, so you need 
-1. gcc/g++
-2. make/cmake
+1. gcc, g++
+2. make, cmake
 3. autoconf
 
-In MAC, use brew. In Linux, use apt or apt to intall these softwares.
+In MAC, use brew. In Linux, use apt or apt-get to intall these softwares.
 
 Now, in Linux, We use Jemalloc. Jemalloc is included with the project as the author of Redis, antirez, changed some source codes of that. (But the original Jemalloc can work with RedRock if you like.) And I have changed the source code of zlib-1.2.11 in deps folder, for there is a name confliction with the whole project, i.e. zmalloc or zfree function.
 
-### Linux install compilation tools
+### in Linux, how install compilation tools
 ```
 sudo apt install make
 sudo apt install cmake
@@ -26,12 +26,12 @@ sudo apt install g++
 sudo apt install autoconf
 ```
 
-### MAC install compilation tools
+### in MAC, how install compilation tools
 
-use brew for install make, cmake, gcc, g++, autoconf 
+use brew to install make, cmake, gcc, g++, autoconf 
 and install XCode for MAC in AppStroe (it needs you to register for Apple)
 
-## First Setup
+## First Setup, Compilation and Make
 
 Clone RedRock from Github, download submodule Rocksdb, then make.
 ```
@@ -61,17 +61,25 @@ You can go on to try it.
 ./redis-server
 ```
 Use client tools like redis-cli, and test the basic commands like set/get.
+```
+./redis-cli
+```
+then in redis-cli window
+```
+set abc 123456
+get abc
+```
 
 ## Compile Options
 ### From the bottom including every library
-If you want everything new from beginning, including compiling each base library like Rocksdb, Snappy
+If you want everything new from the beginning like a new life is coming, including compiling each base library like Rocksdb, Snappy
 ```
 cd src
 make distclean
 make
 ```
 Tip:  
-When compiling the above way like borning baby, it takes LONG time.  
+When compiling the above way like borning a baby, it takes a LONG time.  
 You can make a rest to have a cup of coffee concurrently.
 ### Only compile all source codes in src folder
 We do not need to compile from the bottom every time, because the dependency libraries are stable.
