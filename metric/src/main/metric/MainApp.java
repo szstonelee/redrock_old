@@ -4,7 +4,6 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Preconditions;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -104,19 +103,17 @@ public class MainApp {
     // remote VM
     // sudo ./redis-server --maxmemory 1000m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
     // java -jar target/metric-1.0.jar mode2 2
-    private static void mode2(int howManyMillion, int threadNumber, int write, int redisPort) {
+    private static void mode2(int howManyMillion, int threadNumber, int write) {
         Preconditions.checkArgument(howManyMillion > 0 && howManyMillion <= 1000);
         Preconditions.checkArgument(threadNumber > 0 && threadNumber <= 1000);
-        Preconditions.checkArgument(redisPort > 0 && redisPort < 65535);
 
-        JedisUtils.setRedisPort(redisPort);
         MillionKeys millionKeys = MillionKeysFactory.warmUp(howManyMillion);
 
-        List<KiloRpsForMK> jobs = new LinkedList<>();
+        List<HalfKiloRpsForMK> jobs = new LinkedList<>();
         List<Thread> threads = new LinkedList<>();
 
         for (int i = 0; i < threadNumber; ++i) {
-            KiloRpsForMK job = new KiloRpsForMK(String.valueOf(i), write, millionKeys);
+            HalfKiloRpsForMK job = new HalfKiloRpsForMK(String.valueOf(i), write, millionKeys);
             jobs.add(job);
             threads.add(new Thread(job));
         }
@@ -136,7 +133,7 @@ public class MainApp {
                 int size = jobs.size();
                 if (isAllHealth(jobs)) {
                     System.out.println("All = " + size + ", thread work ok, rps = " + jobs.get(0).getRequestInOneSecond()*(double)size/1000 + " krps, we will add new one...");
-                    KiloRpsForMK newJob = new KiloRpsForMK(String.valueOf(size), write, millionKeys);
+                    HalfKiloRpsForMK newJob = new HalfKiloRpsForMK(String.valueOf(size), write, millionKeys);
                     jobs.add(newJob);
                     Thread newThread = new Thread(newJob);
                     threads.add(newThread);
@@ -152,7 +149,7 @@ public class MainApp {
                 }
             }
 
-            for (KiloRpsForMK job : jobs) {
+            for (HalfKiloRpsForMK job : jobs) {
                 job.stop();
             }
             for (Thread thread : threads) {
@@ -162,8 +159,8 @@ public class MainApp {
         }
     }
 
-    private static boolean isAllHealth(List<KiloRpsForMK> jobs) {
-        for (KiloRpsForMK job : jobs) {
+    private static boolean isAllHealth(List<HalfKiloRpsForMK> jobs) {
+        for (HalfKiloRpsForMK job : jobs) {
             if (!job.getHealth()) {
                 return false;
             }
@@ -208,11 +205,12 @@ public class MainApp {
             if (args.length >= 4) {
                 write = Integer.parseInt(args[3]);
             }
-            int redisPort = 6379;
             if (args.length >= 5) {
-                redisPort = Integer.parseInt(args[4]);
+                int redisPort = Integer.parseInt(args[4]);
+                JedisUtils.setRedisPort(redisPort);
+                System.out.println("input redis port  = " + redisPort);
             }
-            mode2(howManyMillion, threadNumber, write, redisPort);
+            mode2(howManyMillion, threadNumber, write);
         } else {
             printUsage();
         }

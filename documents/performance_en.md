@@ -108,11 +108,12 @@ Check the followong 'how run metric' for how config.
 ### Mode2: how run metric
 ```
 cd metric
-java -jar target/metric-1.0.jar mode2 2 5 6379
+java -jar target/metric-1.0.jar mode2 2 5 1 6379
 ```
 The first parameter, is how many million key/value in the Cache.
 The second parameter, is how many thread when start. 
-The third parameter, is the Redis server port. It is optional.
+The third parameter, is how many write in tenth quest, 1 meaning 10%, 2 meaning 20%.
+The fourth parameter, is the Redis server port. It is optional.
 
 ### Mode3: metric results
 

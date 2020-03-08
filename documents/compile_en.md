@@ -2,15 +2,34 @@
 
 # Compile
 
+It is very complicated and usually frustrated for compilation of a C/C++ project in MAC or Linux.
+
+You need to be patient and figour out what is the problem.
+
 ## Enviroment for Compilation
 
 RedRock and all its dependencies are based on C/C++, so you need 
 1. gcc/g++
 2. make/cmake
+3. autoconf
 
-In MAC, use brew. In Linux, use apt or apt-get to intall these softwares.
+In MAC, use brew. In Linux, use apt or apt to intall these softwares.
 
-Now, in Linux, We use Jemalloc.
+Now, in Linux, We use Jemalloc. Jemalloc is included with the project as the author of Redis, antirez, changed some source codes of that. (But the original Jemalloc can work with RedRock if you like.) And I have changed the source code of zlib-1.2.11 in deps folder, for there is a name confliction with the whole project, i.e. zmalloc or zfree function.
+
+### Linux install compilation tools
+```
+sudo apt install make
+sudo apt install cmake
+sudo apt install gcc
+sudo apt install g++
+sudo apt install autoconf
+```
+
+### MAC install compilation tools
+
+use brew for install make, cmake, gcc, g++, autoconf 
+and install XCode for MAC in AppStroe (it needs you to register for Apple)
 
 ## First Setup
 
@@ -23,9 +42,14 @@ git submodule update
 cd src
 make all
 ```
-If no error shows and a LOGN time of compilation with a lot of warnings, 
 
-you will see an execute file named as redis-server in redrock/src folder.
+NOTE: 
+1. 'git submodule' is for Rocksdb. It will use Rocksdb as a submodule project in RedRock project.
+2. if gib submodule success, you can see a sub folder named 'rocksdb' in 'deps' folder
+
+If no error shows up and after a **LOGN** time of compilation with a lot of warnings, 
+
+you will see an execute file named as **redis-server** in redrock/src folder.
 
 NOTE: do not worry about the warnings, the makefile is for comparatible with old C(C99).
 ```

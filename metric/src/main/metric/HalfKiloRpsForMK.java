@@ -7,7 +7,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
-public class KiloRpsForMK implements Runnable {
+public class HalfKiloRpsForMK implements Runnable {
     private final int BATCH_SIZE = 2;
     private final int ONE_THOUSAND = 500;
 
@@ -30,7 +30,7 @@ public class KiloRpsForMK implements Runnable {
     List<String> readList;
     List<Response<String>> responseList;
 
-    KiloRpsForMK(String name, int write, MillionKeys millionKeys) {
+    HalfKiloRpsForMK(String name, int write, MillionKeys millionKeys) {
         Preconditions.checkArgument(write >= 0 && write <= 5 && write <= BATCH_SIZE);
         this.writeInTenth = write;
         this.millionKeys = millionKeys;
