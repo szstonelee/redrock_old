@@ -73,8 +73,9 @@ sudo vi /etc/default/grub
 add or modify the sentence:
 RUB_CMDLINE_LINUX_DEFAULT="transparent_hugepage=never quiet splash"
 then quit and save
-then reboot
-then check sudo cat /sys/kernel/mm/redhat_transparent_huge
+then sudo update-grub
+then sudo reboot
+then check again 
 ```
 
 ## 我写的一个测试工具
