@@ -2,6 +2,16 @@
 
 # [Back To Test Cases](test_en.md)
 
+## NOTE: overcommit_memory == 0
+
+Some times, in your OS, overcommit_memory == 0.
+
+When you run RedRock (or pure Redis), you will see the warning from the terminal window
+```
+WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+```
+You should set overcommit_memory to 1.
+
 ## Test RDB or AOF backup
 
 1. start RedRock as

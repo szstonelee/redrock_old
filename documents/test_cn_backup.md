@@ -2,6 +2,16 @@
 
 # [测试总目录](test_cn.md)
 
+## 注意：overcommit_memory == 0
+
+有时你的系统里, overcommit_memory == 0.
+
+检测方法：你运行RedRock (或者运行一个纯redis也可以), 你会发现下面这个警告
+```
+WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect.
+```
+这时，你应该设置overcommit_memory为1.
+
 ## 测试备份RDB或AOF
 
 1. 像如下启动RedRock

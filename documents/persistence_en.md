@@ -113,3 +113,7 @@ The situations are very complicated because RedRock need to deal with both the m
 ## Snapshot and Consistence
 
 Backup snapshot is created at the accurate time you issue the backup command. The backup data is a snapshot which means it won't be affected by the write commands afterwards even the time for backup is VERY long. When you use the fork() way to backup, RedRock can service all clients during the period of backup with small impacts to clients. All clients can write(delete)/read any data freely. Backup and servinng clients are isolated when backup use fork() way.
+
+## Set overcommit_memory == 1 for RDB/AOF
+
+[more details is here](test_en_backup.md)

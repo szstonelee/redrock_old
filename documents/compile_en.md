@@ -47,7 +47,7 @@ NOTE:
 1. 'git submodule' is for Rocksdb. It will use Rocksdb as a submodule project in RedRock project.
 2. if gib submodule success, you can see a sub folder named 'rocksdb' in 'deps' folder
 
-If no error shows up and after a **LOGN** time of compilation with a lot of warnings, 
+If no error shows up and after a **LONG** time of compilation with a lot of warnings, 
 
 you will see an execute file named as **redis-server** in redrock/src folder.
 
@@ -69,6 +69,9 @@ then in redis-cli window
 set abc 123456
 get abc
 ```
+NOTE: right now, in 'src' folder, there is a 'redis-cli' execute file, which is compiled by make. You can use it.
+
+You can try test the redis-server by all redis test user cases. [Click here for more details.](test_en.md)
 
 ## Compile Options
 ### From the bottom including every library
@@ -96,4 +99,6 @@ Most of times, when you change just one source file, the quickest way to compile
 make
 ```
 
+## Next Step
 
+[How config to achieve the RedRock features](howrun_en.md) or [How test all user cases for all features](test_en.md)

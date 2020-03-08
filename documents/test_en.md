@@ -11,20 +11,25 @@ We can test all user cases for RedRock. So you can have the confidence that RedR
 First and most, we need to know, whether RedRock can pass all Redis tests.
 
 Redis include a test tool written by tcl. You need install tcl in your OS.
-
+```
+sudo apt install tcl
+```
 Then
 ```
 cd src
-make
 make test
 ```
 NOTE: when run make test, there should no redis-server is running, i.e. No 6379 port is being listened.
 
 The test has  52 test user cases. It takes a long time for all tests, and you can have a cup of coffee.
 
-### Linux mem defrag can not pass when Jemalloc
+### Sometimes Linux mem defrag can not pass when Jemalloc
 
 I do not know why. The original Redis source code https://github.com/antirez/redis, does not pass right now.
+
+But in MAC or Linux compilation without Jemalloc, all test cases pass.
+
+And sometimes Linux with Jemalloc can pass.
 
 I will give it an attention. But every feature and function is OK right now. Do not worry.
 
@@ -43,8 +48,15 @@ You can check whether it is on in your Linux by two ways:
 ./redis-server
 ```
 In the terminal window, if you see Transparent Huge Pages warning, it means your Linux enable the feature.
+```
+# WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+```
 
 2. check the file
+```
+sudo cat /sys/kernel/mm/transparent_hugepage/enabled
+```
+or 
 ```
 sudo cat /sys/kernel/mm/redhat_transparent_huge
 ```
@@ -91,7 +103,7 @@ ls test_redrock.py
 
 ## [Test Replication](test_en_replication.md)
 
-## [Test LFU](test_en_lfu.md)
+## [Test LFU (including LRU)](test_en_lfu.md)
 
 
 

@@ -58,6 +58,17 @@ ls -all redis-server
 ./redis-server
 ```
 用redis-cli连接试试，简单测试一下set, get
+```
+./redis-cli
+```
+在redis-cli窗口里， 执行redis的命令
+```
+set abc 123456
+get abc
+```
+注意：当前src目录下，就有一个已经编译好的redis-cli执行文件，你可以使用之。
+
+你可以执行所有的redis的测试用例. [点击这里了解细节](test_en.md)
 
 ## 编译选项
 ### 底层重新编译
@@ -80,5 +91,10 @@ make
 ```
 make
 ```
+
+## 下一步
+
+你需要了解：[如何配置，才能获得新特性](howrun_cn.md) or [如何测试所有的特性]](test_cn.md)
+
 
 

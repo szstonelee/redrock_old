@@ -11,20 +11,25 @@
 我们先要看看RedRock能否通过Redis自带的测试工具。
 
 Redis带的测试工具时tcl软件编写，你需要在自己的操作系统里安装tcl.
-
+```
+sudo apt install tcl
+```
 接着
 ```
 cd src
-make
 make test
 ```
 注意: 执行make test时, 必须没有redis server在运行, 即6379是空闲的。
 
 总共有52个步骤测试，这需要点时间。
 
-### Linux Jemalloc生效后，mem defrag测试通过不了
+### Linux Jemalloc生效后，有时，mem defrag测试通过不了
 
-我不知道。Redis源码也不过了这个测试（参考：https://github.com/antirez/redis）
+我不知道为什么。Redis源码也不过了这个测试（参考：https://github.com/antirez/redis）
+
+不过有的时候，Linux下，Jemalloc生效了，所有52个测试都能通过。
+
+对于MAC或者Linux下编译但不用Jemalloc，所有的测试用例都可以通过。
 
 这不影响当前的功能和特性，所以不用太担心。我会继续关注这个问题。
 
@@ -43,8 +48,15 @@ make test
 ./redis-server
 ```
 运行窗口里, 如果你的Linux打开了THG，那么你可以看到这个警告
+```
+# WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
+```
 
 2. 检查一个文件
+```
+sudo cat /sys/kernel/mm/transparent_hugepage/enabled
+```
+或者
 ```
 sudo cat /sys/kernel/mm/redhat_transparent_huge
 ```
@@ -91,7 +103,7 @@ ls test_redrock.py
 
 ## [测试Replication](test_cn_replication.md)
 
-## [测试LFU](test_cn_lfu.md)
+## [测试LFU（其实也包括LRU）](test_cn_lfu.md)
 
 
 
