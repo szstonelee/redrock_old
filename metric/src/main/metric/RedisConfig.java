@@ -10,7 +10,7 @@ class RedisConfig {
     final int minIdleConnections = 0;
     final int poolMaxWait = 5000;
 
-    public RedisConfig(int port) {
+    RedisConfig(int port) {
         this.port = port;
     }
 }

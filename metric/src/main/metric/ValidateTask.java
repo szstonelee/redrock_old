@@ -5,7 +5,7 @@ import redis.clients.jedis.Jedis;
 
 import java.util.concurrent.atomic.LongAdder;
 
-public class Task implements Runnable {
+public class ValidateTask implements Runnable {
     private final static LongAdder counter = new LongAdder();
     private final static Timer timer = MainApp.metrics.timer("latency");
 
@@ -13,7 +13,7 @@ public class Task implements Runnable {
     private final String key;
     private final String val;
 
-    Task(int index, String key, String val) {
+    ValidateTask(int index, String key, String val) {
         this.index = index;
         this.key = key;
         this.val = val;

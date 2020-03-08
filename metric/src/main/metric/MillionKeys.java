@@ -11,12 +11,17 @@ import java.util.Random;
 
 class MillionKeys implements Iterator<String> {
     private final int ONE_MILLION = 1000000;
+    private final int LOWER_TTL_SECONDS = 60;
+    private final int UPPER_TTL_SECONDS = 60000;    // 1000 minutes
+
     private final Random rand = new Random();
     private final List<String> prefixs;
     private int indexPrefix;
     private int indexInOnePrefix;
 
     public MillionKeys(int howManyMillion) {
+        Preconditions.checkArgument(howManyMillion > 0);
+
         this.prefixs = new ArrayList<>();
         for (int i = 0; i < howManyMillion; ++i) {
             String prefix = RandomStringUtils.randomAlphanumeric(randPrefixLen());
@@ -27,32 +32,42 @@ class MillionKeys implements Iterator<String> {
 
     void resetIterator() {
         this.indexPrefix = 0;
-        this.indexInOnePrefix = -1;
+        this.indexInOnePrefix = 0;
     }
 
     @Override
     public boolean hasNext() {
-        if (indexPrefix == prefixs.size()) {
-            return false;
-        }
-
-        ++indexInOnePrefix;
-        if (indexInOnePrefix < ONE_MILLION) {
-            return true;
-        } else {
-            indexInOnePrefix = 0;
-            ++indexPrefix;
-            return indexPrefix != prefixs.size();
-        }
+        return indexInOnePrefix < ONE_MILLION;
     }
 
     @Override
     public String next() {
-        return this.prefixs.get(this.indexPrefix) + alignMillionInt(this.indexInOnePrefix);
+        String res = this.prefixs.get(this.indexPrefix) + alignMillionInt(this.indexInOnePrefix);
+        ++indexPrefix;
+        if (indexPrefix == prefixs.size()) {
+            indexPrefix = 0;
+            ++indexInOnePrefix;
+        }
+        return res;
     }
 
     String randValue() {
         return RandomStringUtils.randomAlphanumeric(randInt(200, 2000));
+    }
+
+    String randKey() {
+        int randPrefixIndex = rand.nextInt(prefixs.size());
+        int randSuffixIndex = rand.nextInt(ONE_MILLION);
+        return prefixs.get(randPrefixIndex) + alignMillionInt(randSuffixIndex);
+    }
+
+    int randTtl() {
+        return randInt(LOWER_TTL_SECONDS, UPPER_TTL_SECONDS);
+    }
+
+    String randomIntToStr() {
+        int r = this.rand.nextInt(ONE_MILLION);
+        return alignMillionInt(r);
     }
 
     private String alignMillionInt(int n) {
@@ -70,12 +85,8 @@ class MillionKeys implements Iterator<String> {
     /* random in [lower, upper] */
     private int randInt(int lower, int upper) {
         Preconditions.checkArgument(upper >= lower);
-        return lower + this.rand.nextInt(upper-lower+1);
-    }
 
-    String randomIntToStr() {
-        int r = this.rand.nextInt(ONE_MILLION);
-        return alignMillionInt(r);
+        return lower + this.rand.nextInt(upper-lower+1);
     }
 
     /* Because we use 6 char as 1 million suffix, so 20-200 key random'prefix is from 14-194 */

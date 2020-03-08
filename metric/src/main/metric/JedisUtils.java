@@ -32,6 +32,7 @@ class JedisUtils {
         jedisConf.setMaxIdle(config.maxIdleConnections);
         jedisConf.setMinIdle(config.minIdleConnections);
         jedisConf.setMaxWaitMillis(config.poolMaxWait);
+        jedisConf.setMaxWaitMillis(5000);
 
         jedisPool = new JedisPool(jedisConf, config.server, config.port,
                 config.readTimeout, null, config.database);
