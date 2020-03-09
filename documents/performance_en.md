@@ -89,7 +89,7 @@ About the parameters of the metric program:
 
 It will take a while for the test. You can have a cup of coffee.
 
-#### Percentage of value in disk
+#### Percentage of value in disk (only for RedRock)
 
 use redis-cli to connect RedRock, then
 ```
@@ -103,7 +103,7 @@ rock report
 Condition: How many keys&values in Redis memory: 3 Million
 
 | client threads | rps | 95% latency(ms) |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 16k | 0.07 |
 | 2 | 23k | 0.11 |
 | 3 | 22k | 0.17 |
@@ -124,7 +124,7 @@ java -Xmx9000000000 -jar target/metric-1.0.jar mode1 6 3000
 
 ##### 1 : 2 (38%), for 3 read, 1 to disk, 2 to memory
 | client threads | rps | 95% latency(ms) |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 6k | 0.54 |
 | 2 | 9k | 0.55 |
 | 3 | 8k | 1.03 |
@@ -137,7 +137,7 @@ java -Xmx9000000000 -jar target/metric-1.0.jar mode1 3 3000
 
 ##### 1 : 1 (56%), 50% to diks, 50% to memory
 | client threads | rps | 95% latency(ms) |
-| ----------- | ----------- | ----------- |
+| :-----------: | :-----------: | :-----------: |
 | 1 | 2k | 1.33 |
 | 2 | 3k | 1.23 |
 | 3 | 3k | 2.70 |
@@ -156,7 +156,7 @@ rps: 0.6k, 95% latency(ms): 4
 
 ##### comparison
 | server type | rps | 
-| ----------- | ----------- |
+| :----------- | :-----------: |
 | original Redis, all in memory | 52k |
 | RedRock, 38% oppertunitiy to disk  | 9k |
 | RedRock, 56% oppertunitiy to disk  | 3k |
