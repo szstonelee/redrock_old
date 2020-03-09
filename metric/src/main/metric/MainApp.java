@@ -55,19 +55,19 @@ public class MainApp {
 
         executor.shutdown();
         try {
-            executor.awaitTermination(10, TimeUnit.SECONDS);
+            executor.awaitTermination(30, TimeUnit.SECONDS);
             executor.shutdownNow();
         } catch (InterruptedException e) {
             System.out.println("MainThread interrupted!");
         }
     }
 
-    private static void startReporter() {
+    private static void startReporter(int periord) {
         ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .build();
-        reporter.start(60, TimeUnit.SECONDS);
+        reporter.start(periord, TimeUnit.SECONDS);
     }
 
     // local machine
@@ -88,7 +88,7 @@ public class MainApp {
 
         List<KV> list = initWarmUpForMode1(kvTotal);
 
-        startReporter();
+        startReporter(10);
         validateAndMetric(list, threadNumber);
     }
 
