@@ -28,7 +28,7 @@ If 99.99999% miss in memory, what is my real system performance?
 ## Test Enviroment
 
 1. We hope most key's value in disk, for severl G dataset, at least 90%. (Sometimes I tested in 99%).
-2. The key factor for test is how many percentage a key will be read from disk.
+2. The key factor for test is how many percentage of oppertunity a key will be read from disk.
 3. We hope visits are random for all keys. No hot keys.
 4. Page cache for OS can not be high. Otherwise, reading from disk is actually reading from memory.
 5. Key is small than value. Key size random from 20 to 200 bytes. Value size random from 200 to 2000 bytes.
@@ -122,6 +122,23 @@ java -Xmx9000000000 -jar target/metric-1.0.jar mode1 6 3000
 
 #### RedRock
 
+##### 1 : 4 (23%), for 5 read, 1 to disk, 4 to memory
+| client threads | rps | 95% latency(ms) |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 10k | 0.29 |
+| 2 | 17k | 0.33 |
+| 3 | 22k | 0.36 |
+| 3 | 23k | 0.51 |
+| 3 | 22k | 0.66 |
+```
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 1 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 2 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 3 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 4 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 5 2500
+```
+
+
 ##### 1 : 2 (38%), for 3 read, 1 to disk, 2 to memory
 | client threads | rps | 95% latency(ms) |
 | :-----------: | :-----------: | :-----------: |
@@ -158,6 +175,7 @@ rps: 0.6k, 95% latency(ms): 4
 | server type | rps | 
 | :----------- | :-----------: |
 | original Redis, all in memory | 52k |
+| RedRock, 23% oppertunitiy to disk  | 23k |
 | RedRock, 38% oppertunitiy to disk  | 9k |
 | RedRock, 56% oppertunitiy to disk  | 3k |
 | RedRock, 80% oppertunitiy to disk  | 0.6k |
