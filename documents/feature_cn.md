@@ -10,6 +10,8 @@ MAC OS和Linux(我在Mac上通过VM模拟的Linux)应该可以。其他我不是
 
 是的。因此，你客户端的代码和配置都不用改。
 
+[可参考测试用例](test_cn.md)
+
 ## 支持所有的Redis Commmands
 
 Yes(除了module相关的命令). [你可以参考命令集和注意事项](commands_cn.md)
@@ -29,8 +31,12 @@ Redis一个成功的原因，就是它支持大量的数据结构，而不只是
 * HyperLogLog
 * Geo
 
+[可参考测试用例](test_cn.md)
+
 ## 支持备份（包括Snapshot）
 Yes。[详细参考点这里](persistence_cn.md)
+
+[可参考测试用例](test_cn.md)
 
 ## 作为Cache使用
 Yes。请用expire特性。而且，其expire不需要读盘，[细节参考这里](commands_cn.md)
@@ -46,8 +52,12 @@ Yes。这样，RedRock就像Redis一样可以在限定的内存空间里运行�
 ## 支持LRU & LFU
 Yes。[同样细节请看这里](howrun_cn.md)
 
+[可参考测试用例](test_cn.md)
+
 ## 支持同步，即Master/Slave
 Yes. 我们支持Leader/Follower(就是Master/Slave) replica
+
+[可参考测试用例](test_cn.md)
 
 ## 支持Sentinel
 我想是的，从代码上看是这样。但我只有一台Mac，搭建不了测试环境。如果你测试通过了，麻烦让我知道。谢谢。
@@ -65,11 +75,17 @@ antirez: http://antirez.com/news/101
 ## 支持Pipeline
 Yes。Pipeline也是单台机器的Redis的Performance能达到Million rps级别的关键原因。
 
+[可参考测试用例](test_cn.md)
+
 ## 支持Transaction
 Yes。包括Watch这样的命令。[需要留意一个细节](commands_cn.md)
 
+[可参考测试用例](test_cn.md)
+
 ## 支持Blocking
 Yes。[需要留意一个细节](commands_cn.md)
+
+[可参考测试用例](test_cn.md)
 
 ## 支持Subcribe/Publish
 Yes。
@@ -82,7 +98,7 @@ Yes。但注意：读盘的时延一般而言会远远高于正常命令的内�
 这也就意味SlowLog没有之前那么准了，引入了读盘的误差，但这个无法避免
 
 ## 支持大量写盘
-是的。这个是Rocksdb的特性。我自己Mac机器（SSD）测试过，可以到8 MB/s的写入量，是非常可怕的一个数字。
+是的。这个是Rocksdb的特性。我自己Mac机器（SSD）测试过，可以到20 MB/s的写入量，是非常可怕的一个数字。
 [详细可以参考Performance](performance_cn.md)
 
 ## Key/Value长度等同原Redis

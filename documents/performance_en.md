@@ -154,7 +154,7 @@ java -Xmx12000000000 -jar target/metric-1.0.jar mode1 1 7000
 ```
 rps: 0.6k, 95% latency(ms): 4
 
-##### comparison
+#### comparison
 | server type | rps | 
 | :----------- | :-----------: |
 | original Redis, all in memory | 52k |

@@ -16,6 +16,8 @@ So no source codes and config file needs to be modified for RedRock.
 
 Use it just like RedRock is a Redis server.
 
+[Test Case is here](test_en.md)
+
 ## Almost All Redis Commmands
 
 Yes exclude module commands. [You can click here for more reference](commands_en.md)
@@ -41,10 +43,14 @@ The good thing is RedRock supports all these data structures like Redis.
 * HyperLogLog
 * Geo
 
+[Test Case is here](test_en.md)
+
 ## Support Backup
 Yes.
 
 And it is a snapshot. No concern about consistency. [More details](persistence_en.md)
+
+[Test Case is here](test_en.md)
 
 ## Cache
 Yes.
@@ -74,10 +80,14 @@ Yes.
 
 [More details here](howrun_en.md)
 
+[Test Case is here](test_en.md)
+
 ## Replication, i.e., Master/Slave
 Yes.
 
 Leader/Follower(i.e., Master/Slave) replica are supported.
+
+[Test Case is here](test_en.md)
 
 ## Sentinel
 I think it would support when I check the codes.
@@ -105,15 +115,21 @@ Yes.
 
 Pipeline is the key why Redis get the performance for Million rps in one machine.
 
+[Test Case is here](test_en.md)
+
 ## Transaction
 Yes.
 
 Including commands like WATCH. [More details](commands_en.md)
 
+[Test Case is here](test_en.md)
+
 ## Blocking
 Yes. 
 
 [More details](commands_en.md)
+
+[Test Case is here](test_en.md)
 
 ## Subcribe/Publish
 Yes.
