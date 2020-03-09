@@ -59,10 +59,6 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 [All config parameters same as Redis, plus four added/optional RedRock config parameters](documents/howrun_en.md)
 
-# Supported Redis Commands
-
-[Support all Redis commands except module commands, click for more notice](documents/commands_en.md)
-
 # Supported Redis Features
 
 [Maybe support all Redis features, e.g. Master/Slave, Cluster, Transaction, LUA, more details.](documents/feature_en.md)
@@ -74,6 +70,10 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 # Performance
 
 [I focus on the worst condition performance, more details.](documents/performance_en.md)
+
+# Supported Redis Commands
+
+[Support all Redis commands except module commands, click for more notice](documents/commands_en.md)
 
 # Backup and Persistence, Replication
 

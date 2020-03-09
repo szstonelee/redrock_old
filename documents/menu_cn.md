@@ -50,10 +50,6 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 
 [支持所有的Redis的已有的配置上，再加上我们新增的四个（其中有些是可选的）配置参数，如何配置运行](howrun_cn.md)
 
-# 支持的Redis命令
-
-[支持Redis所有的命令(除了module相关的命令)，需要注意的细节请点入](commands_cn.md)
-
 # 支持Redis的特性
 
 [可能支持Redis的所有的特性，比如主从，集群，事务](feature_cn.md)
@@ -65,6 +61,10 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 # 性能
 
 [在最坏的情况下的性能表现](performance_cn.md)
+
+# 支持的Redis命令
+
+[支持Redis所有的命令(除了module相关的命令)，需要注意的细节请点入](commands_cn.md)
 
 # 备份（持久化）还有同步
 
