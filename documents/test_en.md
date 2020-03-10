@@ -80,6 +80,8 @@ then login and check again
 
 ## My Test Case Tool
 
+### Python3 Source Codes
+
 Please check the python script for the tool, 
 
 it needs Python3 & redis-client for Python (e.g. https://github.com/andymccurdy/redis-py)
@@ -87,7 +89,13 @@ it needs Python3 & redis-client for Python (e.g. https://github.com/andymccurdy/
 cd testredrock
 ls test_redrock.py
 ```
-
+### How install Python3, Pip3, Redis Client For Python in Linux
+```
+sudo apt install python3
+sudo apt install python3-pip
+pip3 install redis
+```
+For MAC, use brew
 ## [Test String Key/Value](test_en_kv.md)
 
 ## [Test All Data Types, String/List/Set/Hash/Zset/Geo/HyperLogLog/Stream](test_en_alltypes.md)

@@ -79,7 +79,7 @@ then check again
 ```
 
 ## 我写的一个测试工具
-
+### Python3下的源码
 这是一个Python脚本 
 
 在Python3下运行，同时需要redis-client for Python模块 (比如：https://github.com/andymccurdy/redis-py)
@@ -87,6 +87,13 @@ then check again
 cd testredrock
 ls test_redrock.py
 ```
+### Linux下如何安装Python3, Pip3, Python Redis客户端
+```
+sudo apt install python3
+sudo apt install python3-pip
+pip3 install redis
+```
+MAC, 请用brew
 
 ## [测试String Key/Value](test_cn_kv.md)
 
