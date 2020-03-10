@@ -16,14 +16,15 @@ SET_VAL_LEN = 1000
 HASH_VAL_LEN = 1000
 ZSET_VAL_LEN = 100
 
-# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 # or
-# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-random
+# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-random
 # after success, run redis-cli, issue command 'rock keyreport'
 # if you see how many keys in disk, you can check one rock key in the report by command 'get'
 # the value for it is like '01234567....'
 # try using 1, 2, 3, 4 million for the two situations
 # when error exception: OOM command not allowed when used memory > 'maxmemory'
+# in linux, you need add sudo and --bind 0.0.0.0
 def _warm_up_with_string(max_keys: int = 1_000_000):
     r = redis.StrictRedis(connection_pool=POOL)
     r.flushall()
@@ -65,7 +66,7 @@ def _check_all_key_in_string(max_keys: int = 1_000_000):
     print(f'Success! all keys value check correct!!! latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
 
 
-# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 # include every datatype
 # string: 0123...1999 string value
 # list: 0,1,100 list
@@ -314,24 +315,24 @@ def _check_block(max_keys: int = 50_000):
 
 def _check_rdb_or_aof():
     # first, run _warm_up_with_string() with
-    # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+    # ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
     # then redis-cli, bgsave, it takes time (you need check the save success result, i.e. "DB saved on disk"
     # and you can see two process named as redis-server, one with huge memory
     # theh, ctrl-c (double)
-    # then, ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
+    # then, ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
     # then _check_all_key_in_string()
     # repeat above but use save (not fork())
     # for aof, use BGREWRITEAOF to create appendonly.aof, then
-    # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --appendonly yes
+    # ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --appendonly yes
     pass
 
 
 def _check_replication():
     # run first redis-server,
-    # ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+    # ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
     # run _warm_up_with_string() to ingest data to the first redis-server
     # run second redis-server (if same machine like me, use different port and different folder, check the follwing)
-    # ./redis-server --port 6380 --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save ""
+    # ./redis-server --port 6380 --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save ""
     # redis-cli -p 6380 to connect to the second redis-server, use replicaof 127.0.0.1 6379 command
     # it will take a long time ...
     # use _check_all_key_in_string() but change the redis POOL config to use second port 6380 (you can test first 6379 also)
@@ -416,7 +417,7 @@ def _check_lua2(max_keys: int = 1_000_000):
 
 
 # run
-# ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu
+# ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu
 def _warm_lfu_for_eviction_check():
     r = redis.StrictRedis(connection_pool=POOL)
     r.flushall()

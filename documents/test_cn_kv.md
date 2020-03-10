@@ -13,8 +13,13 @@ def _warm_up_with_string()
 ### 第一个测试用例：K/V: 一百万 maxmemory-only-for-rocksdb == yes
 
 在maxmemory-only-for-rocksdb == yes以及内存限制在100MB下, 我们尝试插入一百万键和值 
+MAC
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+```
+Linux
+```
+sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
 运行_warm_up_with_string(1_000_000) 
 

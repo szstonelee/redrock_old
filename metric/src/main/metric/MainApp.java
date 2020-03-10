@@ -102,7 +102,7 @@ public class MainApp {
     // java -jar target/metric-1.0.jar mode2 2
     // remote VM
     // sudo ./redis-server --maxmemory 1000m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
-    // java -jar target/metric-1.0.jar mode2 2
+    // java -jar target/metric-1.0.jar mode2 1
     private static void mode2(int howManyMillion, int threadNumber, int write) {
         Preconditions.checkArgument(howManyMillion > 0 && howManyMillion <= 1000);
         Preconditions.checkArgument(threadNumber > 0 && threadNumber <= 1000);

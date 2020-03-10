@@ -15,8 +15,13 @@ You should set overcommit_memory to 1.
 ## Test RDB or AOF backup
 
 1. start RedRock as
+MAC
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+```
+Linux
+```
+sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
 2. in Python3, run
 ```

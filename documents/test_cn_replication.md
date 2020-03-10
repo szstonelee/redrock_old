@@ -5,16 +5,26 @@
 ## 测试Replication
 
 1. 启动RedRock
+MAC
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+```
+Linux
+```
+sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
 2. python3下
 ```
 _warm_up_with_string()
 ```
 3. 运行第二个RedRock (如果是同一台机器上，需要第二端口，如下)
+MAC
 ```
-./redis-server --port 6380 --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save ""
+./redis-server --port 6380 --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save ""
+```
+Linux
+```
+sudo ./redis-server --port 6380 --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save ""  --bind 0.0.0.0
 ```
 4. 用redis-cli连入第二个RedRock
 ```

@@ -13,8 +13,13 @@ def _check_lfu_for_eviction()
 
 ### 如何运行
 首先，启动RedRock
+MAC
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu
+```
+Linux
+```
+sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu --bind 0.0.0.0
 ```
 在Python3下，运行
 ```

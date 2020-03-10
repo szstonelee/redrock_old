@@ -14,8 +14,13 @@ def _warm_up_with_string()
 ### First Test Case for K/V: One Million Key/value with maxmemory-only-for-rocksdb == yes
 
 Let check when maxmemory-only-for-rocksdb == yes and 100MB memory, we insert one million key/value 
+MAC
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+```
+Linux
+```
+sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
 Run _warm_up_with_string(1_000_000) 
 
@@ -84,7 +89,7 @@ And all these keys' value in disk, so the percentage is 100%.
 ### Third Test Case for K/V: One Million Keys with maxmemory-only-for-rocksdb == no
 
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save ""
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save ""
 ```
 this time, we run 
 ```
@@ -97,7 +102,7 @@ It is OK, because 99% keys' value in disk, but there are at 1% key can hold thei
 ### Fourth Test Case for K/V: Four Million Keys with maxmemory-only-for-rocksdb == no && enable eviction
 
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-random
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-random
 ```
 
 run 
@@ -117,7 +122,7 @@ We inserted 4 milliion keys, almost half kept in memory, others are be evicted b
 ### Fifth Test Case for K/V: Insert one millions keys then read with value check
 
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 Python run 
 _warm_up_with_string(1_000_000)
 _check_all_key_in_string()
