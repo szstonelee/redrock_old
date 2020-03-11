@@ -16,4 +16,10 @@ NOTE: slowlog可能因为读盘变得意义不大
 
 ## RedRock新增的统计
 
-hold on
+用redis-cli连入RedRock，然后在redis-cli窗口执行
+```
+rock report
+```
+在服务器端窗口，你可以看到有多少键在磁盘以及比例。
+
+注意：这个命令是全键扫描，因此需要点时间。

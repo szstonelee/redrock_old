@@ -5,11 +5,6 @@
 ## Test Replication
 
 1. start RedRock as
-MAC
-```
-./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-```
-Linux
 ```
 sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
@@ -19,7 +14,7 @@ _warm_up_with_string()
 ```
 3. run second RedRock server (if same machine, you need another listening port)
 ```
-./redis-server --port 6380 --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save ""
+sudo ./redis-server --port 6380 --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --rockdbdir /opt/redrock_rocksdb2/ --save "" --bind 0.0.0.0
 ```
 4. redis-cli connect the second server
 ```

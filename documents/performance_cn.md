@@ -36,7 +36,7 @@ IOPS可以高达Million级别，Thoughput也轻松逼近1000MBps
 首先用编译好的RedRock启动，[编译见这里](compile_cn.md)，[启动参数说明见这里](howrun_cn.md)
 
 ```
-./redis-server --maxmemory 500m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+sudo ./redis-server --maxmemory 500m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 ```
 
 metric程序的编译和执行

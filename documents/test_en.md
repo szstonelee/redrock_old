@@ -29,7 +29,7 @@ I do not know why. The original Redis source code https://github.com/antirez/red
 
 But in MAC or Linux compilation without Jemalloc, all test cases pass.
 
-And sometimes Linux with Jemalloc can pass.
+And sometimes Linux with Jemalloc can pass, like try one more times.
 
 I will give it an attention. But every feature and function is OK right now. Do not worry.
 
@@ -45,7 +45,7 @@ You can check whether it is on in your Linux by two ways:
 
 1. run redis-server (it could be RedRock)
 ```
-./redis-server
+sudo ./redis-server
 ```
 In the terminal window, if you see Transparent Huge Pages warning, it means your Linux enable the feature.
 ```

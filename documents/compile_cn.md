@@ -57,7 +57,7 @@ ls -all redis-server
 如果看到，恭喜你，你已经编译成功，并获得了RedRock。
 然后你可以执行看看，
 ```
-./redis-server
+sudo ./redis-server
 ```
 用redis-cli连接试试，简单测试一下set, get
 ```

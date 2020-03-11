@@ -114,23 +114,23 @@ RedRock会尽量把Value存储到存储山上，腾出内存空间，但所有�
 
 #### 范例1: 100M Max Memory and No Eviction
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
 ```
 #### 范例2：100M Max Memory and Evicition Randomly
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu
 ```
 #### 范例3：100M Max Memory and Eviction with LFU of at least 10K Keys
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu --max-hope-hot-keys 10000
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu --max-hope-hot-keys 10000
 ```
 
 ### 修改配置文件
 
 修改redis.conf文件里，加入enable-rocksdb-feature, rockdbdir, maxmemory-only-for-rocksdb, max-hope-hot-keys这四个值 
 ```
-./redis-server redis.conf
+sudo ./redis-server redis.conf
 ```
 可参考：https://redis.io/topics/config
 

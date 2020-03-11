@@ -15,11 +15,6 @@ You should set overcommit_memory to 1.
 ## Test RDB or AOF backup
 
 1. start RedRock as
-MAC
-```
-./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-```
-Linux
 ```
 sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
@@ -38,13 +33,13 @@ ctrl-C, to stop RedRock
 ```
 5. start Redis-server or RedRock to load the backup file
 ```
-./redis-server
+sudo ./redis-server --bind 0.0.0.0
 or
-./redis-server --appendonly yes
+sudo ./redis-server --appendonly yes --bind 0.0.0.0
 or
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --bind 0.0.0.0
 or
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --appendonly yes
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --appendonly yes --bind 0.0.0.0
 ```
 6. check data in Python test script
 When RedRock finish restoring the backup file

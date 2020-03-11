@@ -13,11 +13,6 @@ _check_all_key_in_data_types()
 
 ### 如何运行
 1. 启动RedRock
-MAC
-```
-./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-```
-Linux
 ```
 sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```

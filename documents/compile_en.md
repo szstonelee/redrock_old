@@ -28,7 +28,7 @@ sudo apt install autoconf
 
 ### in MAC, how install compilation tools
 
-use brew to install make, cmake, gcc, g++, autoconf 
+use brew to install make, cmake, gcc(g++), autoconf 
 and install XCode for MAC in AppStroe (it needs you to register for Apple)
 
 if brew, no need to install g++, only gcc is OK.
@@ -60,7 +60,7 @@ ls -all redis-server
 Congratulation! You compiled sucessfully. 
 You can go on to try it.
 ```
-./redis-server
+sudo ./redis-server
 ```
 Use client tools like redis-cli, and test the basic commands like set/get.
 ```

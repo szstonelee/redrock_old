@@ -14,11 +14,6 @@ def _check_lfu_for_eviction()
 
 ### How Test
 First, start RedRock as
-MAC
-```
-./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu
-```
-Linux
 ```
 sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-lfu --bind 0.0.0.0
 ```

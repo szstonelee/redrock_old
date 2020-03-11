@@ -15,11 +15,6 @@ WARNING overcommit_memory is set to 0! Background save may fail under low memory
 ## 测试备份RDB或AOF
 
 1. 像如下启动RedRock
-MAC
-```
-./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-```
-Linux
 ```
 sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
@@ -38,13 +33,13 @@ ctrl-C, 就可以停止RedRock
 ```
 5. 再启动Redis-server或RedRock，同时让启动重新载入备份文件
 ```
-./redis-server
+sudo ./redis-server --bind 0.0.0.0
 or
-./redis-server --appendonly yes
+sudo ./redis-server --appendonly yes --bind 0.0.0.0
 or
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --bind 0.0.0.0
 or
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --appendonly yes
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --appendonly yes --bind 0.0.0.0
 ```
 6. 用Python脚本验证数据完整性
 python3 

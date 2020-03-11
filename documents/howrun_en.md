@@ -116,16 +116,16 @@ How to make the above config parameters to be effective, there are two ways.
 
 e.g. 1: 100M Max Memory and No Eviction
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes
 ```
 e.g. 2: 100M Max Memory and Evicition Randomly
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu
 ```
 e.g. 3: 100M Max Memory and Eviction with LFU of at least 10K Keys
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu --max-hope-hot-keys 10000
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --maxmemory-policy allkeys-lfu --max-hope-hot-keys 10000
 ```
 
 

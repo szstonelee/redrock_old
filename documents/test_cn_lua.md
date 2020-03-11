@@ -18,7 +18,7 @@ def _check_lua2()
 
 1. 启动RedRock
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""  --bind 0.0.0.0
 ```
 2, Python3下运行
 ```
@@ -29,11 +29,6 @@ _check_lua1()
 #### Lua用例2
 
 1. 启动RedRock
-MAC
-```
-./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-```
-Linux
 ```
 sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```

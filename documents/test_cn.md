@@ -27,7 +27,7 @@ make test
 
 我不知道为什么。Redis源码也不过了这个测试（参考：https://github.com/antirez/redis）
 
-不过有的时候，Linux下，Jemalloc生效了，所有52个测试都能通过。
+不过有的时候，Linux下，Jemalloc生效了，所有52个测试都能通过。（比如再试一次）
 
 对于MAC或者Linux下编译但不用Jemalloc，所有的测试用例都可以通过。
 

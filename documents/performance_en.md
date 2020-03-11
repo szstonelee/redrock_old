@@ -56,7 +56,7 @@ The metric program support two kinds of test mode, mode1 and mode2.
 ##### Original Redis
 You can download original Redis from https://redis.io/
 ```
-./redis-server --maxmemory 6000000000 --save ""
+sudo ./redis-server --maxmemory 6000000000 --save ""
 ```
 ##### RedRock
 run RedRock in specific memory
@@ -66,7 +66,7 @@ First start RedRock using the following config parameters，
 You can reference: [How compile](compile_en.md)，[Config parameters manual](howrun_en.md)
 
 ```
-./redis-server --maxmemory 3000m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+sudo ./redis-server --maxmemory 3000m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
 ```
 NOTE: if linux, You need add 'sudo'.
 

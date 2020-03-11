@@ -13,11 +13,6 @@ def _warm_up_with_string()
 ### 第一个测试用例：K/V: 一百万 maxmemory-only-for-rocksdb == yes
 
 在maxmemory-only-for-rocksdb == yes以及内存限制在100MB下, 我们尝试插入一百万键和值 
-MAC
-```
-./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-```
-Linux
 ```
 sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 ```
@@ -101,7 +96,7 @@ rock report
 ### 第四测试用例：K/V: 四百万 maxmemory-only-for-rocksdb == no 同时启动 eviction
 
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-random
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb no --save "" --maxmemory-policy allkeys-random --bind 0.0.0.0
 ```
 
 然后python里运行
@@ -121,7 +116,7 @@ db=0, key total = 1907718, rock key = 1906765, percentage = 99%, hot key = 953, 
 ### 第五测试用例：for K/V: 不光插入百万，同时还验证数据值
 
 ```
-./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save "" --bind 0.0.0.0
 Python run 
 _warm_up_with_string(1_000_000)
 _check_all_key_in_string()
