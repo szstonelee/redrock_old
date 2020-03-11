@@ -133,7 +133,7 @@ sudo ./redis-server --maxmemory 100m --enable-rocksdb-feature yes --maxmemory-on
 
 Please modify redis.conf, add enable-rocksdb-feature, rockdbdir, maxmemory-only-for-rocksdb, max-hope-hot-keys. 
 ```
-./redis-server redis.conf
+sudo ./redis-server redis.conf
 ```
 Please reference：https://redis.io/topics/config
 

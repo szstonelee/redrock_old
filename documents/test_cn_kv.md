@@ -20,9 +20,11 @@ sudo ./redis-server --maxmemory 200m --enable-rocksdb-feature yes --maxmemory-on
 
 结束后，你检查配置参数'[rockdbdir](howrun_cn.md)' 目录，其缺省值是'/opt/redrock_rocksdb/'
 ```
-du -h /opt/redrock_rocksdb
+du -h redrock_rocksdb
 ```
 你将发现有几个G的磁盘占用。这是好事，说明写盘了。
+
+注意：Mac OS Linux VM下，如果使用Jemalloc，会发现VM内存疯涨，甚至超过你机器真正的内存。但如果是libc却没有这个问题。我不知道原因，但未来会关注。
 
 现在我们需要知道多少键值被写盘。我们用redis-cli连入RedRock
 ```

@@ -21,9 +21,11 @@ Run _warm_up_with_string(1_000_000)
 
 After finish, you can check the '[rockdbdir](howrun_en.md)' folder which default value is '/opt/redrock_rocksdb/'
 ```
-du -h /opt/redrock_rocksdb
+du -h redrock_rocksdb
 ```
 You can find serveral G volume in disk. This means values in Rocksdb. It is a good sign!
+
+NOTE: when I use VM Linux in Host Mac OS with Jemalloc, there is no disk writing but with VM memory exceeding the real memory. But with Libc, it is OK. I do not know why. It is a problem I need to figure out. 
 
 We want to know how many keys' value in disk. We can use redis-cli to connect RedRock, then
 ```

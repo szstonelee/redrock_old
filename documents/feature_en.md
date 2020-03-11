@@ -14,13 +14,15 @@ Yes.
 
 So no source codes and config file needs to be modified for RedRock. 
 
-Use it just like RedRock is a Redis server.
+Use RedRock like RedRock is a Redis server.
 
 [Test Case is here](test_en.md)
 
 ## Almost All Redis Commmands
 
-Yes exclude module commands. [You can click here for more reference](commands_en.md)
+Yes.
+
+exclude module commands. [You can click here for more reference](commands_en.md)
 
 ## All Redis Datastruce
 
