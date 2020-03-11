@@ -30,6 +30,7 @@ sudo apt install autoconf
 
 use brew to install make, cmake, gcc, g++, autoconf 
 and install XCode for MAC in AppStroe (it needs you to register for Apple)
+
 if brew, no need to install g++, only gcc is OK.
 
 ## First Setup, Compilation and Make
