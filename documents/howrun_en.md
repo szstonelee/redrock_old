@@ -30,7 +30,9 @@ It is for which folder where RedRock store data in disk using Rocksdb engine.
 
 #### default value
 
-It is optional and the default value for rockdbdir is "/opt/redrock_rocksdb/".
+It is optional and the default value for rockdbdir is "./redrock_rocksdb/".
+
+If you compile in ‘src’, redrock_rocksdb is in the 'src'
 
 NOTE:
 + The folder name must include '/' as the last character 
@@ -40,9 +42,10 @@ NOTE:
 
 #### Linux folder permission
 
-When in default value, the /opt/redrock_rocksdb/ folder does not have right persission for RedRock to run, 
+You need set folder permission for you specific 'rockdbdir', like /opt/redrock_rocksdb/
 
-You can see this error!
+If you do not have the permission for the folder, you will see such error message when start
+
 ```
 rockapi write status = IO error: while open a file for lock: /opt/redrock_rocksdb/0/LOCK: Permission denied
 ```

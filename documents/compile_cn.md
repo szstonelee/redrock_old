@@ -28,6 +28,8 @@ sudo apt install autoconf
 
 用brew安装上面这几个软件。同时，不要忘了安装XCode(在AppStore里)，它需要你自己安装并向Apple注册。
 
+brew下不用安装g++，只要gcc即可
+
 ## 下载和编译
 
 从GitHub下载本工程后

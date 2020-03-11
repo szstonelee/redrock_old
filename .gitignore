@@ -18,6 +18,7 @@ SHORT_TERM_TODO
 release.h
 src/transfer.sh
 src/configs
+src/redrock_rocksdb
 redis.ds
 src/redis.conf
 src/nodes.conf

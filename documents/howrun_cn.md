@@ -25,7 +25,10 @@ Redis可以不用什么配置，命令行下简单执行./redis-server即可。
 
 ### 3. rockdbdir
 #### 缺省值
-这个参数设置RedRock在哪个目录下用Rocksdb作为数据存储。缺省下：/opt/redrock_rocksdb/ 
+这个参数设置RedRock在哪个目录下用Rocksdb作为数据存储。缺省下：./redrock_rocksdb/ 
+
+如果你缺省在src下编译运行，那么redrock_rocksdb是src的子目录。
+
 注意：
 1. 目录名最后一个字符必须是'/' 
 2. rockdbdir目录只是临时使用，每次RedRock都会讲这个目录下的东西删除干净
@@ -33,9 +36,9 @@ Redis可以不用什么配置，命令行下简单执行./redis-server即可。
 4. 如果想真正备份数据，请参考：[备份持久化](persistence_cn.md)
 #### Linux下的目录权限
 
-Linux下的缺省值，/opt/redrock_rocksdb/ RedRock是没有权限运行的, 
+注意：如果你自己设置自定义derockdbdir目录，比如：/opt/redrock_rocksdb/，请设置好相应的目录权限。 
 
-你将看到下面这个错误信息
+如果权限不对，你将看到下面这个错误信息
 ```
 rockapi write status = IO error: while open a file for lock: /opt/redrock_rocksdb/0/LOCK: Permission denied
 ```
