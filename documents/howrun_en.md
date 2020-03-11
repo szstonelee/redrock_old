@@ -6,6 +6,11 @@ Redis can simiplly run with no arguments. In CLI, type ./redis-server and run re
 
 But if you want the RedRock new features, you need the following **FIVE** config parameters.
 
+NOTE: there a lot of place needs sudo permission. I suggest you grant yourself sudo permission, like 
+```
+su <your account>
+```
+
 ## Config Parameters for RedRock
 ### 1. maxmemory
 First and most, you need set "maxmemory" bigger than zero, e.g. 100mb or 100m
