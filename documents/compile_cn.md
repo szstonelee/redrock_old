@@ -65,8 +65,8 @@ sudo ./redis-server
 ```
 在redis-cli窗口里， 执行redis的命令
 ```
-set abc 123456
-get abc
+set key val123
+get key
 ```
 注意：当前src目录下，就有一个已经编译好的redis-cli执行文件，你可以使用之。
 

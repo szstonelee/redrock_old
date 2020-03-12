@@ -68,8 +68,8 @@ Use client tools like redis-cli, and test the basic commands like set/get.
 ```
 then in redis-cli window
 ```
-set abc 123456
-get abc
+set key val123
+get key
 ```
 NOTE: right now, in 'src' folder, there is a 'redis-cli' execute file, which is compiled by make. You can use it.
 
