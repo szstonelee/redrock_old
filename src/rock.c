@@ -64,6 +64,20 @@
 
 #define ROCK_THREAD_MAX_SLEEP_IN_US 1024
 
+/* 
+ * This is the core module for RedRock. 
+ * It uses a standalone rock thread for reading disk, i.e. Rocksdb. 
+ * So we need something to synchronize.
+ * This time, we use spin lock because we want the master thread run as fast as possiple.
+ * The master thread has more priority/time for executuation, i.e. no sleep.
+ * But the rock thread has some chance to sleep, i.e. when not busy. If busy, rock thread does not sleep.
+ * When master thread found one command from one client will read value from disk,
+ * it put the client in frozen mode, and add a rock job for the rock thread to read from disk.
+ * After the rock thread finish the disk job, it give a signal to master thread by pipe
+ * How about write? 
+ * We let write to be done in master thread, because for Rcoksdb, writing is to memory directly(Memtable) not to disk
+ */
+
 void _rockKeyReport() {
     dictEntry *de;
     dictIterator *di;
@@ -195,7 +209,6 @@ int isRockFeatureEnabled() {
 
 /* error return -1, 1 init ok */
 int initRocksdb(int dbnum, char *path) {
-    // if (!server.enable_rocksdb_feature) return 0;
     serverAssert(isRockFeatureEnabled());
 
     if (!server.maxmemory) {
@@ -221,13 +234,6 @@ void teardownRocksdb() {
     rocksdbapi_teardown();
 }
 
-
-/*
-void incrRockCount() {
-    long old = (long)shared.valueInRock->ptr;
-    shared.valueInRock->ptr = (void*)(++old);
-}
-*/
 
 /* when a client is free, it need to clear its node
  * in each db rockKeys list of clients, for the later safe call
@@ -268,7 +274,7 @@ void _resumeRockClient(client *c) {
 
     if (c->flags & CLIENT_MASTER && !(c->flags & CLIENT_MULTI)) {
         /* Update the applied replication offset of our master. */
-            c->reploff = c->read_reploff - sdslen(c->querybuf) + c->qb_pos;
+        c->reploff = c->read_reploff - sdslen(c->querybuf) + c->qb_pos;
     }
 
     serverAssert(!(c->flags & CLIENT_BLOCKED) || c->btype != BLOCKED_MODULE);
@@ -345,11 +351,11 @@ void _createNewJob(int dbid, sds key) {
     serverAssert(server.rockJob.workKey == NULL);
 
     if (server.rockJob.returnKey) 
-        // We need to release the resource allocated by the following code in previous timing
+        /* We need to release the resource allocated by the following code in previous timing */
         sdsfree(server.rockJob.returnKey);   
 
-    // NOTE: workKey must be a copy of key, becuase scripts may be delete the rockKeys
-    // SO we need to release it by ourself in the above codes
+    /* NOTE: workKey must be a copy of key, becuase scripts may be delete the rockKeys
+     * SO we need to release it by ourself in the above codes */
     sds copyKey = sdsdup(key);
     server.rockJob.workKey = copyKey;
 
@@ -381,7 +387,7 @@ void _getRockWork(int *dbid, sds *key) {
  * NOTE2: when val is going to restore to the db, the key may be deleted (or flushed!)
  * or the val of the key has been updated, we need to check for that 
  * but guarentee not dumping again, so we do not need to worry about the wrong restored value
-*/
+ */
 void _clearFinishKey(int dbid, sds key, robj *val) {    
     listIter li;
     listNode *ln;
@@ -399,8 +405,8 @@ void _clearFinishKey(int dbid, sds key, robj *val) {
         serverAssert(ret == DICT_OK);
     } // else due to deleted, updated or flushed
 
-    /* adjust rockKeyNumber and get zeroClients */
-    /* NOTE: clients maybe empty, because client may be disconnected */
+    /* adjust rockKeyNumber and get zeroClients
+     * NOTE: clients maybe empty, because client may be disconnected */
     clients = dictFetchValue(server.db[dbid].rockKeys, key);    
     serverAssert(clients != NULL);
     listRewind(clients, &li);
@@ -449,8 +455,8 @@ void _restore_obj_from_rocksdb(int dbid, sds key, robj **val, int fromMainThread
     rocksdbapi_read(dbid, key, sdslen(key), &val_db_ptr, &val_db_len);
 
     if (val_db_ptr == NULL) {
-        // fromMainThread meaning it is from script/rdb fork(), 
-        // otherwise it means from RockThread
+        /* fromMainThread meaning it is from script/rdb fork(), 
+         * otherwise it means from RockThread */
         serverLog(LL_WARNING, "_restore_obj_from_rocksdb(), fromMainThread = %d, subChild = %d, key = %s, ", 
             fromMainThread, server.inSubChildProcessState, key);
         serverPanic("_restore_obj_from_rocksdb()");
@@ -461,7 +467,7 @@ void _restore_obj_from_rocksdb(int dbid, sds key, robj **val, int fromMainThread
     robj *o = desObject(val_db_ptr, val_db_len);
     serverAssert(o);
 
-    // we need to free the memory allocated by rocksdbapi
+    /* we need to free the memory allocated by rocksdbapi */
     zfree(val_db_ptr);
 
     *val = o;   
@@ -502,7 +508,7 @@ void _rockPipeReadHandler(struct aeEventLoop *eventLoop, int fd, void *clientDat
     rockunlock();
 
     if (!alreadyFininshedByScript)
-        // if the job has already finished by script, we do not need to clear finish key
+        /* if the job has already finished by script, we do not need to clear finish key */
         _clearFinishKey(finishDbid, finishKey, val);
 
     int moreJobDbid;
@@ -518,15 +524,14 @@ void _rockPipeReadHandler(struct aeEventLoop *eventLoop, int fd, void *clientDat
 
 /* for rdb & aof backup  */
 robj* loadValFromRockForRdb(int dbid, sds key) {
-    // We tempory call the func for rdb test
-    // but it is not correct, because rdb is in another pid
-    // in futrue, we need client/server model to solve the problem 
-
+    /* We tempory call the func for rdb test
+     * but it is not correct, because rdb is in another pid
+     * in futrue, we need client/server model to solve the problem */
     robj *o;
 
     if (server.inSubChildProcessState) {
-        // serverLog(LL_NOTICE, "In subprocess envirenmont");
-        // because we are in child process to get rocksdb val, we need a client/server mode
+        /* serverLog(LL_NOTICE, "In subprocess envirenmont");
+         * because we are in child process to get rocksdb val, we need a client/server mode */
         sds val = requestSnapshotValByKeyInRdbProcess(dbid, key, server.rockRdbParams);
         if (val) {
             o = desObject(val, sdslen(val));
@@ -536,7 +541,7 @@ robj* loadValFromRockForRdb(int dbid, sds key) {
             serverLog(LL_WARNING, "Rocksdb string val is null in child process!");
         }
     } else {    
-        // for call in sync way in main thread of main process, like 'save' command 
+        /* for call in sync way in main thread of main process, like 'save' command */
         doRockRestoreInMainThread(dbid, key, &o);
     }
     
@@ -674,7 +679,7 @@ size_t getMemoryOfRock() {
 }
 
 void dumpValToRock(sds key, int dbid) {
-    serverAssert(!server.inSubChildProcessState);   // In child process for rdb-save, we can not dump value 
+    serverAssert(!server.inSubChildProcessState);   /* In child process for rdb-save, we can not dump value */
 
     dictEntry *de = dictFind(server.db[dbid].dict, key);
     serverAssert(de);
