@@ -31,8 +31,7 @@
 #include "cluster.h"
 #include "atomicvar.h"
 #include "rock.h"
-#include "rockhotkey.h"
-#include "rockhotkey.h"
+#include "rock_hotkey.h"
 
 #include <signal.h>
 #include <ctype.h>

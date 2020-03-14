@@ -42,9 +42,10 @@
  */
 
 #include "rock.h"
-#include "rockserdes.h"
 #include "rocksdbapi.h"
-#include "rockhotkey.h"
+#include "rock_serdes.h"
+#include "rock_hotkey.h"
+#include "rock_rdb.h"
 
 #if defined(__APPLE__)
     #include <os/lock.h>

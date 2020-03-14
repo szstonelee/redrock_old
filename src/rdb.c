@@ -33,7 +33,7 @@
 #include "endianconv.h"
 #include "stream.h"
 #include "rock.h"
-#include "rockhotkey.h"
+#include "rock_hotkey.h"
 
 #include <math.h>
 #include <sys/types.h>

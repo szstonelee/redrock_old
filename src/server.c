@@ -35,10 +35,10 @@
 #include "atomicvar.h"
 
 #include "rock.h"
-#include "rockserdes.h"
-#include "rockrdb.h"
-#include "rockcmds.h"
-#include "rockhotkey.h"
+#include "rock_serdes.h"
+#include "rock_rdb.h"
+#include "rock_cmds.h"
+#include "rock_hotkey.h"
 
 #include <time.h>
 #include <signal.h>

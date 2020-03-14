@@ -32,7 +32,7 @@
 #include "rand.h"
 #include "cluster.h"
 #include "rock.h"
-#include "rocklua.h"
+#include "rock_lua.h"
 
 #include <lua.h>
 #include <lauxlib.h>

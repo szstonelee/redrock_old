@@ -34,7 +34,7 @@
 #include "bio.h"
 #include "atomicvar.h"
 #include "rock.h"
-#include "rockhotkey.h"
+#include "rock_hotkey.h"
 
 /* ----------------------------------------------------------------------------
  * Data structures
