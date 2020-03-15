@@ -44,8 +44,6 @@
 #ifndef __ROCK_H
 #define __ROCK_H
 
-#include "server.h"
-
 /* Map object types to Rocksdb object types. Macros starting with OBJ_ are for
  * memory storage and may change. Instead Rocksdb types must be fixed because
  * we store them on disk. */

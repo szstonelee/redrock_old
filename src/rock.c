@@ -41,6 +41,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "server.h"
 #include "rock.h"
 #include "rocksdbapi.h"
 #include "rock_serdes.h"
@@ -200,7 +201,7 @@ void rockCommand(client *c) {
 
 /* check whether the config is enabled 
  * NOTE: we set these config parameter is mutable, but actually it can not be changed online 
- * return 1 if enabled, otherwise 0*/
+ * return 1 if enabled, otherwise 0 */
 int isRockFeatureEnabled() {
     if (server.enable_rocksdb_feature && server.maxmemory > 0) 
         return 1;
@@ -404,7 +405,7 @@ void _clearFinishKey(int dbid, sds key, robj *val) {
          * NOTE: do not use key because it may be freed later by the caller, use dictGetKey(entry) */
         int ret = dictAdd(server.db[dbid].hotKeys, dictGetKey(entry), NULL);        
         serverAssert(ret == DICT_OK);
-    } // else due to deleted, updated or flushed
+    } /* else due to deleted, updated or flushed */
 
     /* adjust rockKeyNumber and get zeroClients
      * NOTE: clients maybe empty, because client may be disconnected */
@@ -464,7 +465,6 @@ void _restore_obj_from_rocksdb(int dbid, sds key, robj **val, int fromMainThread
         return;
     }
     
-    // robj *o = desString(val_db_ptr, val_db_len);
     robj *o = desObject(val_db_ptr, val_db_len);
     serverAssert(o);
 

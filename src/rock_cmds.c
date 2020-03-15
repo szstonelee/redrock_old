@@ -44,7 +44,8 @@
 #include "server.h"
 #include "rock_cmds.h"
 
-/* for a Redis command, we need to know which parameters is/are key(s) and whether it needs to check Rocksdb
+/* 
+ * for a Redis command, we need to know which parameters is/are key(s) and whether it needs to check Rocksdb
  *
  * e.g.
  * for command 'info', the command is nothing about keys
@@ -52,7 +53,8 @@
  * for command 'set', we do not need to check Rocksdb because it is an overwrite command
  *
  * some commands use first paramter as key, some commands use variable paramter
- * check the following functions for all kinds */
+ * check the following functions for all kinds 
+ */
 
 /* a lot of commands only use one key, we use one common function for all */
 void cmdCheckRockForOneKey(client *c, struct redisCommand *cmd, robj **argv, int argc, list *l) {

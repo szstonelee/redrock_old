@@ -45,7 +45,8 @@
 #include "rock_hotkey.h"
 #include "rock.h"
 
-/* this file is for two purposes:
+/* 
+ * this file is for two purposes:
  * 1. how to operator hot keys -- hot keys is a dictionary in each db, 
  *    which is can be dumped to rocksdb
  * 2. how to choose hot key to dump. We use the same way as Redis
@@ -56,7 +57,7 @@
  * to adjust the hotKey. val maybe null, if null, we need read it from db */
 void addHotKeyIfNeed(redisDb *db, sds key, robj *val) {
     if (!server.alreadyInitHotKeys)
-        return;     // meaning we do not enable hotKey, we only use the check for not init (db.c)
+        return;     /* meaning we do not enable hotKey, we only use the check for not init (db.c) */
 
     if (val == NULL) {
         dictEntry *de = dictFind(db->dict, key);
@@ -69,20 +70,20 @@ void addHotKeyIfNeed(redisDb *db, sds key, robj *val) {
 
     if (val == shared.valueInRock) {
         serverLog(LL_WARNING, "addHotKeyIfNeed(), the value is RockValue! key = %s", key);
-        return;      // if value already in Rocksdb, no need  
+        return;      /* if value already in Rocksdb, no need */
     }  
 
     if (val->type == OBJ_STREAM || val->refcount == OBJ_SHARED_REFCOUNT) {
-        dictDelete(db->hotKeys, key);   // because may be overwrite
-        return;   // we do not dump stream to Rocksdb
+        dictDelete(db->hotKeys, key);   /* because may be overwrite */
+        return;   /* we do not dump stream to Rocksdb */
     }
 
-    dictAdd(db->hotKeys, key, NULL);    // maybe insert a hotkey or overwrite a hotkey
+    dictAdd(db->hotKeys, key, NULL);    /* maybe insert a hotkey or overwrite a hotkey */
 }
 
 void deleteHotKeyIfNeed(redisDb *db, sds key) {
-    if (!server.alreadyInitHotKeys) return;     // hotKey not enable
-    dictDelete(db->hotKeys, key);       // key may be in hotKeys
+    if (!server.alreadyInitHotKeys) return;     /* hotKey not enable */
+    dictDelete(db->hotKeys, key);       /* key may be in hotKeys */
 }
 
 /* when flushdb, db will be empted, check db.c */
@@ -98,11 +99,11 @@ void clearHotKeysWhenEmptyDb(redisDb *db) {
     dictEmpty(db->hotKeys, NULL);
 
     for (int i = 0; i < server.dbnum; ++i) {
-        // if there are hotKeys exisit (in otherdb), we do nothing
+        /* if there are hotKeys exisit (in otherdb), we do nothing */
         if (dictSize(server.db[i].hotKeys)) return;
     }
 
-    // every db hotkeys is empty and all db probably flushed, we set lazy init again
+    /* every db hotkeys is empty and all db probably flushed, we set lazy init again */
     server.alreadyInitHotKeys = 0;  
 }
 
@@ -267,21 +268,21 @@ void rockPoolPopulate(int dbid, dict *sampledict, dict *keydict, struct rockPool
 /* estimate the memory usage considering the rockdb engine
  * return C_OK for no need to free memory by dumping to rocksdb, 
  * otherwise return C_ERR, so we need first dump memory to rocksdb first, tofree has th value
-*/
+ */
 int _getMmemoryStateWithRock(size_t *tofree) {
-    if (!server.maxmemory) return C_OK;     // no need limit in server config, return ASAP
+    if (!server.maxmemory) return C_OK;     /* no need limit in server config, return ASAP */
 
     size_t mem_reported, mem_aof_slave, mem_rock, mem_used;
 
     mem_reported = zmalloc_used_memory();
  
-    // mem_aof_slave is the memory used by slave buffer and AOF buffer 
+    /* mem_aof_slave is the memory used by slave buffer and AOF buffer */
     mem_aof_slave = freeMemoryGetNotCountedMemory();  
     mem_rock = getMemoryOfRock();
 
     mem_used = (mem_reported > mem_aof_slave + mem_rock) ? mem_reported - mem_aof_slave - mem_rock : 0;
 
-    // before go to evic, we need keep SAFE_MEMORY_ROCK_BEFORE_EVIC room for rock dump first
+    /* before go to evic, we need keep SAFE_MEMORY_ROCK_BEFORE_EVIC room for rock dump first */
     if (mem_used + SAFE_MEMORY_ROCK_BEFORE_EVIC <= server.maxmemory) return C_OK;
 
     *tofree = mem_used + SAFE_MEMORY_ROCK_BEFORE_EVIC - server.maxmemory;
@@ -289,7 +290,7 @@ int _getMmemoryStateWithRock(size_t *tofree) {
     serverLog(LL_DEBUG, "maxmemory = %llu, repored =%lu, mem_aof_slave = %lu, rock = %lu, used = %lu, tofree = %lu, safe = %lu", 
         server.maxmemory, mem_reported, mem_aof_slave, mem_rock, mem_used, *tofree, (long)SAFE_MEMORY_ROCK_BEFORE_EVIC);
 
-    return C_ERR;   // we need to try to dump some values to rocksdb
+    return C_ERR;   /* we need to try to dump some values to rocksdb */
 }
 
 
@@ -303,7 +304,7 @@ int _isValueSuitForDumpRock(sds key, dict *valueDict) {
     val = dictGetVal(de);
     serverAssert(val);
 
-    // stream object never evict
+    /* stream object never evict */
     if (val->type == OBJ_STREAM) return 0;
 
     return val->refcount == 1 ? 1: 0;
@@ -321,19 +322,19 @@ int dumpValueToRockIfNeeded() {
 
     /* we use lazy init for HotKeys, _getMmemoryStateWithRock() if C_OK, no need to init HotKeys */
     if (!server.alreadyInitHotKeys) {
-        server.alreadyInitHotKeys = 1;  // only once
+        server.alreadyInitHotKeys = 1;  /* only once */
         int ret = initHotKeys();
         serverAssert(ret != 0);
     }
 
     if (!server.maxmemory_only_for_rocksdb) {
-        // we keep some hotkeys alive, i.e. not dumping all keys to Rocksdb
-        // because we can try to use eviction way when not server.maxmemory_only_for_rocksdb
-        // otherwise, eviction can not take effect because all lru/lfu value in Rocksdb not in memory
+        /* we keep some hotkeys alive, i.e. not dumping all keys to Rocksdb
+         * because we can try to use eviction way when not server.maxmemory_only_for_rocksdb
+         * otherwise, eviction can not take effect because all lru/lfu value in Rocksdb not in memory */
         long long total_hot_keys = 0;
         for (int i = 0; i < server.dbnum; ++i) {
             total_hot_keys += dictSize(server.db[i].hotKeys);
-            if (total_hot_keys <= server.maxHopeHotKeys) return C_ERR;       // try eviction with at least 1K keys alive
+            if (total_hot_keys <= server.maxHopeHotKeys) return C_ERR;       /* try eviction with at least 1K keys alive */
         }
     }
 
@@ -426,9 +427,8 @@ int dumpValueToRockIfNeeded() {
 
         if (bestkey) {
             if (dictFind(server.db[bestdbid].rockKeys, bestkey) == NULL) {
-                // serverLog(LL_NOTICE, "bestkey = %s", bestkey);
                 delta = (long long) zmalloc_used_memory();
-                dumpValToRock(bestkey, bestdbid);  // replace the value
+                dumpValToRock(bestkey, bestdbid);  /* replace the value */
                 delta -= (long long) zmalloc_used_memory();
                 mem_freed += delta;
             }
@@ -441,7 +441,7 @@ int dumpValueToRockIfNeeded() {
 
     latency = ustime() - latency;
     serverLog(LL_DEBUG, "sucess latency(us) = %lld, try times = %d", latency, try_max_times);
-    return C_OK;    // dump val to rocksdb to save enough memory
+    return C_OK;    /* dump val to rocksdb to save enough memory */
 
 cant_free:
     if (try_max_times >= MAX_TRY_PICK_KEY_TIMES) {

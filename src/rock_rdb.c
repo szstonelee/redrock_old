@@ -43,10 +43,12 @@
 
 #include <pthread.h>
 
+#include "server.h"
 #include "rock_rdb.h"
 #include "rocksdbapi.h"
 
-/* all rdb related codes goes here. We use 'rdb' name or tag, 
+/* 
+ * all rdb related codes goes here. We use 'rdb' name or tag, 
  * but if you check Redis source code, aof/replication all use such feature related to rdb 
  *  
  * e.g. 
@@ -59,7 +61,8 @@
  * We use a Client/Server mode for the problem. 
  * Server is running in main process (in a single thread) for read Rocksdb
  * Client is running in child process for request/end the service in main process.
- * Process communication is based on IPC */
+ * Process communication is based on IPC 
+ */
 
 /* read length of bytes from pipe file descriptor, 
  * return 1 if success read(including len==0), return 0 if pipe close, -1 if error */
@@ -121,29 +124,25 @@ void wakeupRdbServiceThreadAfterForkInMainThread(RockRdbParams *params) {
 
 /* service thread for rdb process to request value in the snapshot */
 void *_serviceForRdbChildProcessInServiceThread(void *arg) {
-    // serverLog(LL_NOTICE, "rdb service new born here! rdb service thread id = %d", (int)pthread_self());
-
     RockRdbParams *params = arg;
 
-    // waiting for main thread unlock the mutex(after fork()) to wake up and start working
+    /* waiting for main thread unlock the mutex(after fork()) to wake up and start working */
     pthread_mutex_lock(&params->mutex);   
     pthread_mutex_unlock(&params->mutex); 
 
-    // serverLog(LL_NOTICE, "rdb service wake up! rdb service thread id = %d", (int)pthread_self());
-
-    close(params->pipe_request[1]);     // do not need write-end of request
-    close(params->pipe_response[0]);    // do not need read-end of response
+    close(params->pipe_request[1]);     /* do not need write-end of request */
+    close(params->pipe_response[0]);    /* do not need read-end of response */
 
     int ret;
     sds key = NULL;
     void *db_val = NULL;
 
     while(1) {
-        // read request
+        /* read request */
         int dbi;
         ret = _read_pipe_by_length(params->pipe_request[0], (char*)&dbi, sizeof(int));
         if (ret == 0)
-            break;  // normal exit because reqeust pipe close
+            break;  /* normal exit because reqeust pipe close */
         if (ret == -1) {
             serverLog(LL_WARNING, "rdb servive thread: read request dbi, read error!");
             goto err;
@@ -171,16 +170,16 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
             goto err;
         } 
 
-        // read rocksdb snapshot
+        /* read rocksdb snapshot */
         size_t val_len;
         rocksdbapi_read_from_snapshot(dbi, key, key_len, &db_val, &val_len);
         if (db_val == NULL) {
-            // not found
+            /* not found */
             serverLog(LL_WARNING, "rdb service thread: call rocksdbapi(snapshot), return NOT_FOUND!");
             goto err;
         }
 
-        // response
+        /* response */
         ret = _write_pipe_by_length(params->pipe_response[1], (char*)&val_len, sizeof(size_t));
         if (ret == -1) {
             /* if child process is killed like first config set appendonly no, 
@@ -198,7 +197,7 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
         zfree(db_val);
         key = NULL;
         db_val = NULL;
-        // waiting for next request until pipe close
+        /* waiting for next request until pipe close */
     }
 
     serverAssert(key == NULL && db_val == NULL);
@@ -209,7 +208,7 @@ void *_serviceForRdbChildProcessInServiceThread(void *arg) {
     serverLog(LL_NOTICE, "rdb service exit successfully with close snapshot! rdb service thread id = %d", (int)pthread_self());
     serverAssert(server.isRdbServiceThreadRunning == 1);
     server.isRdbServiceThreadRunning = 0;
-    return NULL;    // thread exit with success
+    return NULL;    /* thread exit with success */
 
 err:
     if (key) sdsfree(key);
@@ -221,18 +220,18 @@ err:
     rocksdbapi_releaseAllSnapshots();
     serverAssert(server.isRdbServiceThreadRunning == 1);
     server.isRdbServiceThreadRunning = 0;
-    return NULL;    // thread exit with error
+    return NULL;    /* thread exit with error */
 }
 
 /* when a child rdb process start, call this func for initialization */
 void initForRockInRdbProcess(RockRdbParams *params) {
-    close(params->pipe_request[0]);     // do not need read-end for request pipe
-    close(params->pipe_response[1]);    // do not need write-end for response pipe
+    close(params->pipe_request[0]);     /* do not need read-end for request pipe */
+    close(params->pipe_response[1]);    /* do not need write-end for response pipe */
 }
 
 /* when the child rdb process exit, call this func for clear resource */
 void clearForRockWhenExitInRdbProcess(RockRdbParams *params) {
-    // it will close the request pipe, signal the service thread to exit
+    /* it will close the request pipe, signal the service thread to exit */
     _closeRockRdbParamsPipes(params);    
 }
 
@@ -241,7 +240,7 @@ void clearForRockWhenExitInRdbProcess(RockRdbParams *params) {
 sds requestSnapshotValByKeyInRdbProcess(int dbi, sds key, RockRdbParams *params) {
     int ret;
 
-    // first send the key(dbi) to the request pipe
+    /* first send the key(dbi) to the request pipe */
     ret = _write_pipe_by_length(params->pipe_request[1], (void*)&dbi, sizeof(int));
     if (ret == -1) return NULL;
     
@@ -252,7 +251,7 @@ sds requestSnapshotValByKeyInRdbProcess(int dbi, sds key, RockRdbParams *params)
     ret = _write_pipe_by_length(params->pipe_request[1], (void*)key, key_len);
     if (ret == -1) return NULL;
 
-    // then read the response from response pipe
+    /* then read the response from response pipe */
     size_t val_len;
     ret = _read_pipe_by_length(params->pipe_response[0], (void*)&val_len, sizeof(size_t));
     if (ret <= 0) return NULL;
@@ -283,7 +282,7 @@ int initRockSerivceForRdbInMainThread(RockRdbParams *params) {
         return -1;
     }
 
-    // lock the mutex to let the following newborn rdb service thread sleep
+    /* lock the mutex to let the following newborn rdb service thread sleep */
     if (pthread_mutex_lock(&params->mutex) != 0) {
         serverLog(LL_WARNING, "main thread lock the mutex failed!");
         return -1;

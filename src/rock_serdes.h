@@ -44,8 +44,6 @@
 #ifndef __ROCKSERDES_H
 #define __ROCKSERDES_H
 
-#include "server.h"
-
 robj *desString(char *s, size_t len);
 sds serObject(robj *o);
 robj *desObject(void *buf, size_t len);

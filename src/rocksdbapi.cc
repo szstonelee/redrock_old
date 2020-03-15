@@ -48,7 +48,8 @@
 #include "rocksdb/table.h"
 #include "rocksdb/filter_policy.h"
 
-/* All though Rocksdb give a C-called Interface, but I read the document too late
+/* 
+ * All though Rocksdb give a C-called Interface, but I read the document too late
  * And there are some good profits for seperate the cpp file 
  * for we can write pure c++ codes right here. 
  * Right now, API here is very simple, just init/teardown read/write, snapshot
@@ -56,7 +57,8 @@
  * even though the caller, are in async mode(i.e. main thread race with rocks thread), 
  * delete/overwrite may be race with a restore operation from Rocksdb
  * because Redis use single main thread architecture and we dependent on it with another thread
- * check rock.c for more details */
+ * check rock.c for more details 
+ */
 
 /* the only C interface for cpp from outside, because we need a universal memory allocation methods */
 extern "C" void *zmalloc(size_t size);

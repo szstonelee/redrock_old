@@ -45,7 +45,8 @@
 #include "rock_lua.h"
 #include "rock.h"
 
-/* for script(lua) we need do whole thing by one time, something like transaction
+/* 
+ * for script(lua) we need do whole thing by one time, something like transaction
  * but transaction just accumulat some commands before 'exec' command, and if condition is OK, 
  * i.e. all rock keys restored value from db, it can be executed, and has nothing with other clients (except blocking)
  * 
@@ -58,13 +59,14 @@
  * even more complicated, we have a race condition.
  * If the rocksdb thread just doing something with the ONE rock key, and the rock key is just in the script keys
  * so we need a flag in server.rockJob, it is 'alreadyFinishedByScript', 
- * and we need do some synchronized consideration */
+ * and we need do some synchronized consideration 
+ */
 
-// GLOBAL variable for script maybeFinishKey list
+/* GLOBAL variable for script maybeFinishKey list */
 static list *g_maybeFinishKeys = NULL;
 
 void _freeMaybeKey(void *maybeKey) {
-    sdsfree(((scriptMaybeKey*)maybeKey)->key);  // because the key is duplicated
+    sdsfree(((scriptMaybeKey*)maybeKey)->key);  /* because the key is duplicated */
     zfree(maybeKey);
 }
 
@@ -103,8 +105,8 @@ void _clearMaybeFinishKeyFromScript(list *maybeKeys) {
 
         dictEntry *entry = dictFind(server.db[dbid].dict, key);
         if (!entry || dictGetVal(entry) != shared.valueInRock) {
-            // the key has been deleted or the value of the key not be dumped, so it need to be cleared
-            if (!_isAlreadyInScriptNeedFinishKeys(needFishishKeys, maybeKey))   // no duplication 
+            /* the key has been deleted or the value of the key not be dumped, so it need to be cleared */
+            if (!_isAlreadyInScriptNeedFinishKeys(needFishishKeys, maybeKey))   /* no duplication */
                 listAddNodeTail(needFishishKeys, maybeKey); 
         } 
     }
@@ -127,20 +129,20 @@ void _clearMaybeFinishKeyFromScript(list *maybeKeys) {
                 if (c->rockKeyNumber == 0)
                     listAddNodeTail(zeroClients, c);
             }
-            // we need to check the rockJob for concurrency consideration
+            /* we need to check the rockJob for concurrency consideration */
             rocklock();
             if (server.rockJob.dbid == dbid) {
                 if (server.rockJob.workKey) {
                     if (sdscmp(server.rockJob.workKey, key) == 0) {
-                        // workKey maybe is processed in the rockThread
-                        // we need to set the alreadyFinishedByScript
+                        /* workKey maybe is processed in the rockThread
+                         * we need to set the alreadyFinishedByScript */
                         serverAssert(server.rockJob.alreadyFinishedByScript == 0);
                         server.rockJob.alreadyFinishedByScript = 1;
                     }
                 } else if (server.rockJob.returnKey) {
                     if (sdscmp(server.rockJob.returnKey, key) == 0) {
-                        // returnKey will be processed by the main thread in future
-                        // we need to set the alreadyFinishedByScript
+                        /* returnKey will be processed by the main thread in future
+                         * we need to set the alreadyFinishedByScript */
                         serverAssert(server.rockJob.alreadyFinishedByScript == 0);
                         server.rockJob.alreadyFinishedByScript = 1;
                     }
@@ -159,14 +161,14 @@ void _clearMaybeFinishKeyFromScript(list *maybeKeys) {
         checkThenResumeRockClient(c);
     }
 
-    // because list->free is NULL, the node->val is cleared by the caller
+    /* because list->free is NULL, the node->val is cleared by the caller */
     listRelease(needFishishKeys);
     listRelease(zeroClients);   
 }
 
 /* when a script start, we need call this func to do some initiazation 
  * it then combined with scriptForBeforeEachCall() and scirptForBeforeExit() 
- * to do everthing related to rocksdb when it happened in script/LUA situation*/
+ * to do everthing related to rocksdb when it happened in script/LUA situation */
 void scriptWhenStartForRock() {
     serverAssert(g_maybeFinishKeys == NULL);
     g_maybeFinishKeys = listCreate();
@@ -197,8 +199,8 @@ void scriptForBeforeEachCallForRock(client *c) {
     while((ln = listNext(&li))) {
         sds key = listNodeValue(ln);
 
-        // load the value from Rocksdb in main thread in sync mode, 
-        // NOTE: maybe duplicated (i.e the value maybe restored by the previous restore, but it does no matter
+        /* load the value from Rocksdb in main thread in sync mode, 
+         * NOTE: maybe duplicated (i.e the value maybe restored by the previous restore, but it does no matter */
         robj *valInRock;
         doRockRestoreInMainThread(dbid, key, &valInRock);
         dictEntry *de = dictFind(c->db->dict, key);
@@ -223,5 +225,5 @@ void scriptForBeforeEachCallForRock(client *c) {
 void scirptForBeforeExitForRock() {
     _clearMaybeFinishKeyFromScript(g_maybeFinishKeys);
     listRelease(g_maybeFinishKeys);
-    g_maybeFinishKeys = NULL;   // ready for next script
+    g_maybeFinishKeys = NULL;   /* ready for next script */
 }

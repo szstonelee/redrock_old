@@ -41,6 +41,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "server.h"
 #include "rock.h"
 #include "intset.h"
 
@@ -539,7 +540,7 @@ robj *desObject(void *buf, size_t len) {
     char rock_type = *(char*)buf;
 
     serverAssert(len >= 1+sizeof(uint32_t));
-    // then 32bit -> 24bit LRU/LFU
+    /* then 32bit -> 24bit LRU/LFU */
     uint32_t lru = *((uint32_t*)((char*)buf+1));
 
     switch (rock_type) {
@@ -791,7 +792,7 @@ void _test_print_quicklist(quicklist *ql) {
 void _test_ser_des_list(void) {
     serverLog(LL_NOTICE, "_test_ser_des_list");
 
-    // try use redis client to lpush some value to key abc
+    /* try use redis client to lpush some value to key abc */
     char lookup[] = "abc";
     sds key = sdsnewlen(lookup, sizeof(lookup)-1);
     dictEntry *de = dictFind(server.db[0].dict, key);
