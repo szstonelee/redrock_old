@@ -83,7 +83,7 @@ std::vector<const rocksdb::Snapshot*> rocksdb_all_snapshots;
 std::string rocksdb_root_path;
 
 void _assertRocksdbStatus(const rocksdb::Status &s, 
-    char *key, size_t key_len, char *val, size_t val_len) {
+    char* key, size_t key_len, char* val, size_t val_len) {
     if (!s.ok()) {
         std::cout << "rockapi write status = " << s.ToString() << std::endl;
         if (key)
@@ -97,11 +97,11 @@ void _assertRocksdbStatus(const rocksdb::Status &s,
 void rocksdbapi_createSnapshots(void) {    
     for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
         rocksdb::DB* db = rocksdb_all_dbs[i];
-        rocksdb::Snapshot const *saved = rocksdb_all_snapshots[i];
+        rocksdb::Snapshot const* saved = rocksdb_all_snapshots[i];
 
-        assert(saved == NULL);
+        assert(saved == nullptr);
         if (db) {
-            rocksdb::Snapshot const *snapshot = db->GetSnapshot();
+            rocksdb::Snapshot const* snapshot = db->GetSnapshot();
             rocksdb_all_snapshots[i] = snapshot;
         }
     }
@@ -109,13 +109,13 @@ void rocksdbapi_createSnapshots(void) {
 
 void rocksdbapi_releaseAllSnapshots(void) {
     for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
-        rocksdb::DB *db = rocksdb_all_dbs[i];
+        rocksdb::DB* db = rocksdb_all_dbs[i];
         if (db) {
             rocksdb::Snapshot const *snapshot = db->GetSnapshot();
             if (snapshot) 
                 db->ReleaseSnapshot(snapshot);
         }
-        rocksdb_all_snapshots[i] = NULL; 
+        rocksdb_all_snapshots[i] = nullptr; 
     }
 }
 
@@ -161,13 +161,13 @@ rocksdb::DB* open_if_not_exist(int dbi) {
     path += std::to_string(dbi);
     rocksdb::Status status = rocksdb::DB::Open(options, path, &db);
 
-    _assertRocksdbStatus(status, NULL, 0, NULL, 0);
+    _assertRocksdbStatus(status, nullptr, 0, nullptr, 0);
 
     rocksdb_all_dbs[dbi] = db;
     return db;
 }
 
-void rocksdbapi_init(int dbnum, char *root_path) {
+void rocksdbapi_init(int dbnum, char* root_path) {
     assert(dbnum > 0 && root_path && rocksdb_all_dbs.empty() && rocksdb_root_path.empty());
 
     rocksdb_root_path = std::string(root_path); 
@@ -187,8 +187,8 @@ void rocksdbapi_init(int dbnum, char *root_path) {
     }
 
     for (int i = 0; i < dbnum; ++i) {
-        rocksdb_all_dbs.push_back(NULL);
-        rocksdb_all_snapshots.push_back(NULL);
+        rocksdb_all_dbs.push_back(nullptr);
+        rocksdb_all_snapshots.push_back(nullptr);
     }
 
     open_if_not_exist(0);
@@ -201,7 +201,7 @@ void rocksdbapi_teardown() {
 }
 
 /* if not found, val is NULL */
-void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val_len) {
+void rocksdbapi_read(int dbi, void* key, size_t key_len, void** val, size_t* val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);
 
@@ -213,7 +213,7 @@ void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val
     rocksdb::Status s = db->Get(rocksdb::ReadOptions(), rock_key, &rock_val);
 
     if (s.IsNotFound()) {
-        *val = NULL;
+        *val = nullptr;
         return;
     }
 
@@ -226,7 +226,7 @@ void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val
 }
 
 /* if not found, val is NULL */
-void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **val, size_t *val_len) {
+void rocksdbapi_read_from_snapshot(int dbi, void* key, size_t key_len, void** val, size_t* val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);
 
@@ -242,7 +242,7 @@ void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **va
     rocksdb::Status s = db->Get(option, rock_key, &rock_val);
 
     if (s.IsNotFound()) {
-        *val = NULL;
+        *val = nullptr;
         return;
     }
 
@@ -254,7 +254,7 @@ void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **va
     *val_len = rock_val.size();
 }
 
-void rocksdbapi_write(int dbi, char *key, size_t key_len, char *val, size_t val_len) {
+void rocksdbapi_write(int dbi, char* key, size_t key_len, char* val, size_t val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);
 
