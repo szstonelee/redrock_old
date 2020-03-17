@@ -214,6 +214,9 @@ The fifth parameter, is the Redis server port. It is optional.
 
 the following table:
 
+There is something wrong with Linux VM in my Mac OS host. The memory exceeds the max of my phisical number. 
+
+I do not know why. I need a pure Linux to test but right now I have not the stuff.
 
 ## Excpect other test cases
 
