@@ -33,29 +33,145 @@ IOPS可以高达Million级别，Thoughput也轻松逼近1000MBps
 
 请参考metric目录下的测试软件，用java编写
 
-首先用编译好的RedRock启动，[编译见这里](compile_cn.md)，[启动参数说明见这里](howrun_cn.md)
-
-```
-sudo ./redis-server --maxmemory 500m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
-```
-
-metric程序的编译和执行
 ```
 cd metric
 mvn package
-java -jar target/metric-1.0.jar 2 2000
 ```
 
-其中，第一个2，表示2个线程，第二个2000，表示2000K的数据。这个测试程序执行时间有点久，分钟级。
+测试程序分两种模式，mode1 和  mode2
 
-## 测试结果
+## Mode1: 测试时同时做数据验证
 
-1. 95%的键在磁盘上，echo keyreport，可以看到这个报告
-2. OS的Page Cache应该和少，我的IDE，浏览器，metric测试程序将大部分内存都用掉了
-3. 线程为2时，指标参数最好。线程多了，因为磁盘读写压力太大，反而Thoughput没有那么好
-4. rps大致在5k rps，latency 95%在1ms以下
+### Mode1: 如何运行
 
-作为对比，如果用同样的metric测试程序，存Redis，rps在60K左右
+#### Server端
+
+##### 先测试原Redis
+在Redis官网下载 https://redis.io/
+```
+sudo ./redis-server --maxmemory 6000000000 --save ""
+```
+##### 然后测试我们的RedRock
+需要用到内存指定
+
+首先预备知识，先请参考: [如何编译](compile_cn.md)，[参数配置](howrun_cn.md)
+
+```
+sudo ./redis-server --maxmemory 3000m --enable-rocksdb-feature yes --maxmemory-only-for-rocksdb yes --save ""
+```
+
+#### Client端
+
+```
+cd metric
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 2 3000 6379
+```
+
+这个测试程序的几个参数说明:
+
+* -Xmx9000000000 Java的内存大小, 否则 Java 会 OOM
+
+* 第二个参数, 即 2，表示启动两个线程.
+
+* 第三个参数, 即. 3000, 我们用 3000K (i.e. 3 百万) key/value 数据测试.
+
+* 第四个参数, 即 6379, redis端口. 这个是可选值，缺省值6379.
+
+#### 如何查看有多少比例的数据在磁盘 (只有RedRock才有此功能)
+
+用redis-cli连上RedRock
+```
+rock report
+```
+
+### Mode1结果
+
+#### 纯Redis
+
+Redis内存里的key/value对: 3 百万
+
+| client threads | rps | 95% latency(ms) |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 16k | 0.07 |
+| 2 | 23k | 0.11 |
+| 3 | 22k | 0.17 |
+| 4 | 34k | 0.16 |
+| 5 | 52k | 0.16 |
+| 6 | 39k | 0.23 |
+
+```
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 1 3000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 2 3000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 3 3000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 4 3000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 5 3000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 6 3000
+```
+
+#### RedRock
+
+##### 1 : 4 (23%), for 5 read, 1 to disk, 4 to memory
+| client threads | rps | 95% latency(ms) |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 10k | 0.29 |
+| 2 | 17k | 0.33 |
+| 3 | 22k | 0.36 |
+| 3 | 23k | 0.51 |
+| 3 | 22k | 0.66 |
+```
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 1 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 2 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 3 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 4 2500
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 5 2500
+```
+
+
+##### 1 : 2 (38%), for 3 read, 1 to disk, 2 to memory
+| client threads | rps | 95% latency(ms) |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 6k | 0.54 |
+| 2 | 9k | 0.55 |
+| 3 | 8k | 1.03 |
+
+```
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 1 3000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 2 3000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 3 3000
+```
+
+##### 1 : 1 (56%), 50% to diks, 50% to memory
+| client threads | rps | 95% latency(ms) |
+| :-----------: | :-----------: | :-----------: |
+| 1 | 2k | 1.33 |
+| 2 | 3k | 1.23 |
+| 3 | 3k | 2.70 |
+
+```
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 1 4000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 2 4000
+java -Xmx9000000000 -jar target/metric-1.0.jar mode1 3 4000
+```
+
+##### 4 : 1 (80%), for 10 read, 8 to disk , 2 to memory
+```
+java -Xmx12000000000 -jar target/metric-1.0.jar mode1 1 7000
+```
+rps: 0.6k, 95% latency(ms): 4
+
+#### comparison
+| server type | rps | 
+| :----------- | :-----------: |
+| original Redis, all in memory | 52k |
+| RedRock, 23% oppertunitiy to disk  | 23k |
+| RedRock, 38% oppertunitiy to disk  | 9k |
+| RedRock, 56% oppertunitiy to disk  | 3k |
+| RedRock, 80% oppertunitiy to disk  | 0.6k |
+
+
+## Mode2: test read with write in a cache enviroment
+
+待续。。。
 
 ## 期待其他环境下的测试
 
