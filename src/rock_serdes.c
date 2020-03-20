@@ -42,8 +42,8 @@
  */
 
 #include "server.h"
-#include "rock.h"
 #include "intset.h"
+#include "rock.h"
 
 /* This is for serialize/deserilize all data types of Redis,
  * like String, Set, Hash, List, Zset
