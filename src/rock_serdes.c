@@ -131,10 +131,10 @@ sds serString(sds dst, robj *o) {
  * please reference the above serString() for reference */
 #define OBJ_ENCODING_EMBSTR_SIZE_LIMIT 44
 robj *desString(char *s, size_t len, uint32_t lru) {
-    serverAssert(len >= 2+sizeof(uint32_t));
+    serverAssert(len >= 2+sizeof(lru));
     serverAssert(s[0] == ROCK_TYPE_STRING);
-    s += 1+sizeof(uint32_t);
-    len -= 1+sizeof(uint32_t);
+    s += 1+sizeof(lru);
+    len -= 1+sizeof(lru);
 
     robj *o;
     int encoding = (int)(*s);
