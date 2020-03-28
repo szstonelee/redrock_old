@@ -60,18 +60,17 @@
  * check rock.c for more details 
  */
 
-/* the only C interface for cpp from outside, because we need a universal memory allocation methods */
 extern "C" void *zmalloc(size_t size);
+// void rocksdbapi_init(int dbnum, char *root_path);
+// void rocksdbapi_teardown();
+// void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val_len);
+// void rocksdbapi_write(int dbi, char *key, size_t key_len, char *val, size_t val_len);
+// size_t rocksdbapi_memory(void);
+// void rocksdbapi_createSnapshots(void);
+// void rocksdbapi_releaseAllSnapshots(void);
+// void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **val, size_t *val_len);
 
-/* Tedious, but the way to expose cpp API to c when link */
-extern "C" void rocksdbapi_init(int dbnum, char *root_path);
-extern "C" void rocksdbapi_teardown();
-extern "C" void rocksdbapi_read(int dbi, void *key, size_t key_len, void **val, size_t *val_len);
-extern "C" void rocksdbapi_write(int dbi, char *key, size_t key_len, char *val, size_t val_len);
-extern "C" size_t rocksdbapi_memory(void);
-extern "C" void rocksdbapi_createSnapshots(void);
-extern "C" void rocksdbapi_releaseAllSnapshots(void);
-extern "C" void rocksdbapi_read_from_snapshot(int dbi, void *key, size_t key_len, void **val, size_t *val_len);
+namespace rocksdbapi {
 
 #define ROCKDB_WRITE_BUFFER_SIZE    16
 #define ROCKDB_BLOCK_CACHE_SIZE    0
@@ -94,7 +93,7 @@ void _assertRocksdbStatus(const rocksdb::Status &s,
     }    
 }
 
-void rocksdbapi_createSnapshots(void) {    
+extern "C" void rocksdbapi_createSnapshots(void) {    
     for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
         rocksdb::DB* db = rocksdb_all_dbs[i];
         rocksdb::Snapshot const* saved = rocksdb_all_snapshots[i];
@@ -107,7 +106,7 @@ void rocksdbapi_createSnapshots(void) {
     }
 }
 
-void rocksdbapi_releaseAllSnapshots(void) {
+extern "C" void rocksdbapi_releaseAllSnapshots(void) {
     for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
         rocksdb::DB* db = rocksdb_all_dbs[i];
         if (db) {
@@ -119,7 +118,7 @@ void rocksdbapi_releaseAllSnapshots(void) {
     }
 }
 
-size_t rocksdbapi_memory(void) {    
+extern "C" size_t rocksdbapi_memory(void) {    
     return (ROCKDB_WRITE_BUFFER_SIZE + ROCKDB_BLOCK_CACHE_SIZE) << 20;
 }
 
@@ -167,7 +166,7 @@ rocksdb::DB* open_if_not_exist(int dbi) {
     return db;
 }
 
-void rocksdbapi_init(int dbnum, char* root_path) {
+extern "C" void rocksdbapi_init(int dbnum, char* root_path) {
     assert(dbnum > 0 && root_path && rocksdb_all_dbs.empty() && rocksdb_root_path.empty());
 
     rocksdb_root_path = std::string(root_path); 
@@ -194,14 +193,14 @@ void rocksdbapi_init(int dbnum, char* root_path) {
     open_if_not_exist(0);
 }
 
-void rocksdbapi_teardown() {
+extern "C" void rocksdbapi_teardown() {
     for (auto db : rocksdb_all_dbs) {
         if (db) delete db;
     }
 }
 
 /* if not found, val is NULL */
-void rocksdbapi_read(int dbi, void* key, size_t key_len, void** val, size_t* val_len) {
+extern "C" void rocksdbapi_read(int dbi, void* key, size_t key_len, void** val, size_t* val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);
 
@@ -226,7 +225,7 @@ void rocksdbapi_read(int dbi, void* key, size_t key_len, void** val, size_t* val
 }
 
 /* if not found, val is NULL */
-void rocksdbapi_read_from_snapshot(int dbi, void* key, size_t key_len, void** val, size_t* val_len) {
+extern "C" void rocksdbapi_read_from_snapshot(int dbi, void* key, size_t key_len, void** val, size_t* val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);
 
@@ -254,7 +253,7 @@ void rocksdbapi_read_from_snapshot(int dbi, void* key, size_t key_len, void** va
     *val_len = rock_val.size();
 }
 
-void rocksdbapi_write(int dbi, char* key, size_t key_len, char* val, size_t val_len) {
+extern "C" void rocksdbapi_write(int dbi, char* key, size_t key_len, char* val, size_t val_len) {
     assert(dbi >= 0 && dbi < rocksdb_all_dbs.size());
     assert(key && key_len && val && val_len);
 
@@ -269,3 +268,4 @@ void rocksdbapi_write(int dbi, char* key, size_t key_len, char* val, size_t val_
     _assertRocksdbStatus(s, key, key_len, val, val_len);
 }
 
+}   // namespace

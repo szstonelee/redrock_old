@@ -215,7 +215,7 @@ def _check_all_key_in_data_types(max_keys: int = 5_000):
             raise AssertionError
 
     end = time.time()
-    print(f'Success! all keys value check correct!!! latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
+    print(f'Success! all keys value with all types check correct!!! latency = {int(end-start)} seconds, avg = {int(100000/(end-start))} rps')
 
 
 # please run _warm_up_with_string() first
