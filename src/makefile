@@ -267,12 +267,10 @@ rocksdbapi.o:
 	g++ -std=c++11 -c -o rocksdbapi.o rocksdbapi.cc -I ../deps/rocksdb/include
 
 libhiredis.a:
-	cd ../deps
-	make hiredis
+	cd ../deps && make hiredis
 
 liblua.a:
-	cd ../deps
-	make lua
+	cd ../deps && make lua
 
 librocksdb.a:
 	cd ../deps/rocksdb
