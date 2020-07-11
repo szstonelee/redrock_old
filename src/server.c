@@ -5144,8 +5144,10 @@ int main(int argc, char **argv) {
     aeMain(server.el);
     aeDeleteEventLoop(server.el);
 
-    if (server.enable_rocksdb_feature)
+    if (server.enable_rocksdb_feature) {
+        serverLog(LL_NOTICE, "Rocksdb closed!");
         teardownRocksdb();
+    }
 
     return 0;
 }

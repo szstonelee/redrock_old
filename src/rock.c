@@ -168,7 +168,7 @@ void _debug_lru() {
 }
 
 void rockCommand(client *c) {
-    serverLog(LL_NOTICE, "rock command! WAL enable with every write in sync!");
+    serverLog(LL_NOTICE, "rock command!");
 
     char *echoStr = c->argv[1]->ptr;
     if (strcmp(echoStr, "testserdesstr") == 0) {
