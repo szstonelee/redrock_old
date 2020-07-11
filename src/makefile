@@ -263,9 +263,6 @@ ifneq ($(strip $(PREV_FINAL_LDFLAGS)), $(strip $(FINAL_LDFLAGS)))
 .make-prerequisites: persist-settings
 endif
 
-rocksdbapi.o:
-	g++ -std=c++11 -c -o rocksdbapi.o rocksdbapi.cc -I ../deps/rocksdb/include
-
 libhiredis.a:
 	cd ../deps && make hiredis
 
@@ -290,6 +287,9 @@ liblz4.a:
 
 libzstd.a:
 	cd ../deps && make zstd
+
+rocksdbapi.o: librocksdb.a
+	g++ -std=c++11 -c -o rocksdbapi.o rocksdbapi.cc -I ../deps/rocksdb/include
 
 # redis-server
 $(REDIS_SERVER_NAME): $(REDIS_SERVER_OBJ) rocksdbapi.o
