@@ -19,11 +19,12 @@ Now, in Linux, We use Jemalloc. Jemalloc is included with the project as the aut
 
 ### in Linux, how install compilation tools
 ```
-sudo apt install make
-sudo apt install cmake
-sudo apt install gcc
-sudo apt install g++
-sudo apt install autoconf
+sudo apt upgrade
+sudo apt -y install make
+sudo apt -y install cmake
+sudo apt -y install gcc
+sudo apt -y install g++
+sudo apt -y install autoconf
 ```
 
 ### in MAC, how install compilation tools
@@ -37,6 +38,7 @@ if brew, no need to install g++, only gcc is OK.
 
 Clone RedRock from Github, download submodule Rocksdb, then make.
 ```
+cd
 git clone https://github.com/szstonelee/redrock redrock
 cd redrock
 git submodule init

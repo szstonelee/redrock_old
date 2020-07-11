@@ -262,7 +262,7 @@ extern "C" void rocksdbapi_write(int dbi, char* key, size_t key_len, char* val, 
 
     rocksdb::WriteOptions write_opts;
     write_opts.disableWAL = true;
-    write_opts.sync = true;
+    // write_opts.sync = true;
     rocksdb::Status s = 
         db->Put(write_opts, rocksdb::Slice(key, key_len), rocksdb::Slice(val, val_len));
     
