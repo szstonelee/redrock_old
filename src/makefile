@@ -267,21 +267,21 @@ rocksdbapi.o:
 	g++ -std=c++11 -c -o rocksdbapi.o rocksdbapi.cc -I ../deps/rocksdb/include
 
 libhiredis.a:
-  cd ../deps
+	cd ../deps
 	make hiredis
 
 liblua.a:
-  cd ../deps
-  make lua
+	cd ../deps
+	make lua
 
 librocksdb.a:
-  cd ../deps/rocksdb
+	cd ../deps/rocksdb
 	# if memory is limited, -j 1 can help to go through that, especially for VM situation
 	make static_lib -j 1
 	mv librocksdb.a ../staticlib/
 
 libz.a:
-  cd ../deps/cd zlib-1.2.11
+	cd ../deps/cd zlib-1.2.11
 	./configure
 	make 
 	mv libz.a ../staticlib/
@@ -292,15 +292,15 @@ libbz2.a:
 	mv bzip2/libbz2.a staticlib/
 
 libsnappy.a:
-  cd ../deps
+	cd ../deps
 	make snappy
 
 liblz4.a:
-  cd ../deps
+	cd ../deps
 	make lz4
 
 libzstd.a:
-  cd ../deps
+	cd ../deps
 	make zstd
 
 # redis-server

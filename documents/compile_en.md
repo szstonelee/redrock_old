@@ -25,6 +25,7 @@ sudo apt -y install cmake
 sudo apt -y install gcc
 sudo apt -y install g++
 sudo apt -y install autoconf
+sudo apt-get install -y pkg-config
 ```
 
 ### in MAC, how install compilation tools
