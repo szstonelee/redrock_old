@@ -169,6 +169,8 @@ public class MainApp {
     }
 
     public static void main(String[] args) {
+        // System.out.println("Try the question of Java...");
+        // JavaEssentialFromYingwang.f();   // will throw java.lang.ArrayStoreException
 
         if (args.length < 1) {
             printUsage();
