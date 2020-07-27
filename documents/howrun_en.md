@@ -173,7 +173,7 @@ In this way, RedRock features are disabled. It is a traditional Redis server. Yo
 
 This is a demo for how RedRock run in docker.
 
-You can check the above info. But for test, you do not need to the above instructions.
+You can check the above info. But for test, you do not need to exec the above instructions.
 
 Just check the following instructions.
 
@@ -209,7 +209,7 @@ ls
 
 If you see the .sst file, there are keys in Rocksddb.
 
-If you want to the log for command like ['rock report'](stat_en.md)
+If you want to check the server log for command like ['rock report'](stat_en.md)
 ```
 sudo docker logs <container id>
 ```
