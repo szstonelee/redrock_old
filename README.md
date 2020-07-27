@@ -55,6 +55,10 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 [Based on C/C++, click for details](documents/compile_en.md)
 
+Or
+
+[Run in docker for a sample](ocuments/howrun_en.md)
+
 # How Config and Run
 
 [All config parameters same as Redis, plus four added/optional RedRock config parameters](documents/howrun_en.md)

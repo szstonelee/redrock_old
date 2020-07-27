@@ -168,3 +168,50 @@ The answer is simiplly **NO**. Please reference an article from Redis author ant
 + If we enable maxmemory, but do not enable enable-rocksdb-feature, what will happen? 
 
 In this way, RedRock features are disabled. It is a traditional Redis server. You can reference: https://redis.io/topics/lru-cache
+
+# Run in docker for sample
+
+This is a demo for how RedRock run in docker.
+
+You can check the above info. But for test, you do not need to the above instructions.
+
+Just check the following instructions.
+
+## Install docker
+In Linux, please
+```
+sudo apt-get update
+sudo apt-get remove docker docker-engine docker.io
+sudo apt -y install docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+In Mac, install Docker Desktop.
+
+## Run
+```
+sudo docker run --privileged -dp 6379:6379 szstonelee/redrock:test
+```
+
+## Check
+
+[Run all test case](test_en.md)
+
+## Docker Check
+
+```
+sudo docker ps
+sudo docker exec -it <container id> /bin/bash
+cd /rockdbdi/0
+ls
+```
+
+If you see the .sst file, there are keys in Rocksddb.
+
+If you want to the log for command like ['rock report'](stat_en.md)
+```
+sudo docker logs <container id>
+```
+
+

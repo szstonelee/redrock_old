@@ -6,6 +6,8 @@ It is very complicated and usually frustrated for compilation of a C/C++ project
 
 You need to be patient and figour out what is the problem.
 
+NOTE: I found when using Jemalloc there is an issue which shows no write to .sst for Linux VM of MacOS. So right now, in Linux, we use libc.
+
 ## Enviroment for Compilation
 
 RedRock and all its dependencies are based on C/C++, so you need 

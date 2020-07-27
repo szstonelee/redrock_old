@@ -161,3 +161,43 @@ config get max-hope-hot-keys
 
 3. 如果只设置maxmemory，但不设置enable-rocksdb-feature，会如何 
 这时，RedRock是被禁止的，其功能就是传统的Redis的表现，可以参考：https://redis.io/topics/lru-cache
+
+# 在Docker下运行的一个测试范例
+
+## 安装Docker
+
+Linux下
+```
+sudo apt-get update
+sudo apt-get remove docker docker-engine docker.io
+sudo apt -y install docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+Mac下，请安装Docker Desktop
+
+## 运行
+```
+sudo docker run --privileged -dp 6379:6379 szstonelee/redrock:test
+```
+
+## 检验
+
+[测试那些测试程序用例](test_cn.md)
+
+## Docker中观测
+
+```
+sudo docker ps
+sudo docker exec -it <container id> /bin/bash
+cd /rockdbdi/0
+ls
+```
+
+如果你跑那些测试用例，在这个目录下看见了 .sst 文件, 那就说明有数据写入Rocksddb.
+
+如果想看 ['rock report'](stat_cn.md) 命令的结果，请用
+```
+sudo docker logs <container id>
+```

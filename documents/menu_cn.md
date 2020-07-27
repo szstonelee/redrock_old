@@ -46,6 +46,8 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 
 [基于C/C++，详细点这里](compile_cn.md)
 
+[或者简答点，直接docker运行一个Sample](howrun_cn.md)
+
 # 配置和运行
 
 [支持所有的Redis的已有的配置上，再加上我们新增的四个（其中有些是可选的）配置参数，如何配置运行](howrun_cn.md)
