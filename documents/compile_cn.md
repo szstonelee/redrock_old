@@ -17,11 +17,13 @@ NOTE: Linux下，已经开始支持Jemalloc了。Jemalloc已经包含在本工�
 ### Linux下的准备
 
 ```
-sudo apt install make
-sudo apt install cmake
-sudo apt install gcc
-sudo apt install g++
-sudo apt install autoconf
+sudo apt upgrade
+sudo apt -y install make
+sudo apt -y install cmake
+sudo apt -y install gcc
+sudo apt -y install g++
+sudo apt -y install autoconf
+sudo apt -y install pkg-config
 ```
 
 ### Mac下的准备
@@ -96,7 +98,7 @@ make
 
 ## 下一步
 
-你需要了解：[如何配置，才能获得新特性](howrun_cn.md) or [如何测试所有的特性]](test_cn.md)
+你需要了解：[如何配置，才能获得新特性](howrun_cn.md) or [如何测试所有的特性](test_cn.md)
 
 
 
