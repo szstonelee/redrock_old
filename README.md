@@ -57,7 +57,7 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 Or
 
-[Run in docker for a sample](ocuments/howrun_en.md)
+[Run in docker for a sample](documents/howrun_en.md)
 
 # How Config and Run
 
