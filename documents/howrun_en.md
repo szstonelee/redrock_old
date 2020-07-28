@@ -171,7 +171,7 @@ In this way, RedRock features are disabled. It is a traditional Redis server. Yo
 
 # Run in docker for sample
 
-This is a demo for how RedRock [run in docker.](#docker)
+This is a demo for how RedRock run in docker.[docker]{#docker}
 
 You can check the above info. But for test, you do not need to exec the above instructions.
 
