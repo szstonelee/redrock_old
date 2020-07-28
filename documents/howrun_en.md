@@ -169,9 +169,9 @@ The answer is simiplly **NO**. Please reference an article from Redis author ant
 
 In this way, RedRock features are disabled. It is a traditional Redis server. You can reference: https://redis.io/topics/lru-cache
 
-# Run in docker for sample
+# <a name="docker"></a>Run in docker for sample
 
-This is a demo for how RedRock run in docker.[docker]{#docker}
+This is a demo for how RedRock run in docker.
 
 You can check the above info. But for test, you do not need to exec the above instructions.
 
