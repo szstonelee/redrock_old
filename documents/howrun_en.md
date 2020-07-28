@@ -169,7 +169,7 @@ The answer is simiplly **NO**. Please reference an article from Redis author ant
 
 In this way, RedRock features are disabled. It is a traditional Redis server. You can reference: https://redis.io/topics/lru-cache
 
-# <a name="docker"></a>Run in docker for sample
+# <a name="docker"></a>Run in docker for a sample
 
 This is a demo for how RedRock run in docker.
 
