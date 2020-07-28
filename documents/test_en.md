@@ -96,6 +96,16 @@ sudo apt install python3-pip
 pip3 install redis
 ```
 For MAC, use brew
+
+### run python script with pipenv
+由于Python的环境问题是个大挑战，比如常见的python2, python3，就是一个大麻烦。
+
+在我的github下, 你可以用Pipenv来运行test_redrock.py.
+
+```
+pipenv run python3 test_redrock.py
+```
+
 ## [Test String Key/Value](test_en_kv.md)
 
 ## [Test All Data Types, String/List/Set/Hash/Zset/Geo/HyperLogLog/Stream](test_en_alltypes.md)

@@ -196,18 +196,18 @@ sudo docker run --privileged -dp 6379:6379 szstonelee/redrock:test
 
 ## Check
 
-[Run all test case](test_en.md)
+[Run all test cases](test_en.md)
 
 ## Docker Check
 
 ```
 sudo docker ps
 sudo docker exec -it <container id> /bin/bash
-cd /rockdbdi/0
+cd /rockdbdir/0
 ls
 ```
 
-If you see the .sst file, there are keys in Rocksddb.
+If you see the .sst file, there are keys in Rocksdb.
 
 If you want to check the server log for command like ['rock report'](stat_en.md)
 ```
