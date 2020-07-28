@@ -95,6 +95,15 @@ pip3 install redis
 ```
 MAC, 请用brew
 
+### run python script with pipenv
+由于Python的环境问题是个大挑战，比如常见的python2, python3，就是一个大麻烦。
+
+在我的github下, 你可以用Pipenv来运行test_redrock.py.
+
+```
+pipenv run python3 test_redrock.py
+```
+
 ## [测试String Key/Value](test_cn_kv.md)
 
 ## [测试各种数据结构, 包括：String/List/Set/Hash/Zset/Geo/HyperLogLog/Stream](test_cn_alltypes.md)
