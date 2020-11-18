@@ -10,7 +10,9 @@ Best situation lies.
 
 This year, when I first used SSD to improve a cache system, I thought it was a easy job because I checked a lot of metric reports online which told me that it is easy to achive Million IOPS and nearly 1G Bps throughput for SSD. 
 
-But they lie.
+But they lie. 
+
+NOTE: The sentence I wrote was not 100% accurate. For some enterprise SSD, in optimal situations, we can achive these metric numbers.
 
 It is reaonable for a hardware merchant to lie because it is a business.
 
