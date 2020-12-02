@@ -84,7 +84,7 @@ std::string rocksdb_root_path;
 void _assertRocksdbStatus(const rocksdb::Status &s, 
     char* key, size_t key_len, char* val, size_t val_len) {
     if (!s.ok()) {
-        std::cout << "rockapi write status = " << s.ToString() << std::endl;
+        std::cout << "rockapi status = " << s.ToString() << std::endl;
         if (key)
             std::cout << "key len = " << key_len << ", key = " << key << std::endl;
         if (val)
@@ -95,12 +95,13 @@ void _assertRocksdbStatus(const rocksdb::Status &s,
 
 extern "C" void rocksdbapi_createSnapshots(void) {    
     for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
-        rocksdb::DB* db = rocksdb_all_dbs[i];
-        rocksdb::Snapshot const* saved = rocksdb_all_snapshots[i];
+        assert(rocksdb_all_snapshots[i] == nullptr);
 
-        assert(saved == nullptr);
+        rocksdb::DB* db = rocksdb_all_dbs[i];        
+
         if (db) {
             rocksdb::Snapshot const* snapshot = db->GetSnapshot();
+            assert(snapshot);
             rocksdb_all_snapshots[i] = snapshot;
         }
     }
@@ -110,11 +111,14 @@ extern "C" void rocksdbapi_releaseAllSnapshots(void) {
     for (int i = 0; i < rocksdb_all_dbs.size(); ++i) {
         rocksdb::DB* db = rocksdb_all_dbs[i];
         if (db) {
-            rocksdb::Snapshot const *snapshot = db->GetSnapshot();
-            if (snapshot) 
+            rocksdb::Snapshot const* snapshot = rocksdb_all_snapshots[i];
+            // NOTE: db is not nullptr while snapshot may be nullptr, because a new db 
+            // may be created by call open_if_not_exist() after calling rocksdbapi_createSnapshots()
+            if (snapshot) {
                 db->ReleaseSnapshot(snapshot);
-        }
-        rocksdb_all_snapshots[i] = nullptr; 
+                rocksdb_all_snapshots[i] = nullptr; 
+            }
+        }        
     }
 }
 
@@ -179,7 +183,7 @@ extern "C" void rocksdbapi_init(int dbnum, char* root_path) {
             dir += std::to_string(i);
             std::error_code errorCode;
             if (std::experimental::filesystem::remove_all(dir, errorCode) < 0) {
-                std::cout << "rocksdbapi_init(), remove rock sub director {" <<  i << "} failed with errorcode " << errorCode << std::endl;
+                std::cerr << "rocksdbapi_init(), remove rock sub director {" <<  i << "} failed with errorcode " << errorCode << std::endl;
                 return;
             }
         }
