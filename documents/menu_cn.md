@@ -13,11 +13,11 @@ Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 核心设计要点：
 RedRock将所有的key/value都存储在内存里，如果内存不够，RedRock将把value转储到磁盘上。一般而言，value的尺寸远大于key，假设value的size是key的一百倍，那么我们的数据集大小将可以达到内存的一百倍（比如：10G内存，可以存储1T的数据集）。如果更多的key到来，RedRock可以用LRU/LFU淘汰一些key从而腾出更多的空间。
 
-如果大部分的访问都落到留在内存的key/value时，那么RedRock的性能和Redis是一样的，即一台机器可以达到几百Kqps同时99%的时延在1ms以下。如果更多的访问落在磁盘上，那么RedRock的性能将会降低，感兴趣的朋友可以看一下[性能测试benchmark](documents/performance_cn.md)。
+如果大部分的访问都落到留在内存的key/value时，那么RedRock的性能和Redis是一样的，即一台机器可以达到几百Kqps同时99%的时延在1ms以下。如果更多的访问落在磁盘上，那么RedRock的性能将会降低，感兴趣的朋友可以看一下[性能测试benchmark](performance_cn.md)。
 
 所以，RedRock比较适合这样的应用：热数据主要在内存里，同时有大量的温数据和冷数据在磁盘上。这就是典型的数据库应用。
 
-需要注意的是：RedRock仍采用Redis的备份存储方式，即AOF/RDB。但里面有很多细节需要注意，毕竟现在的记录集很可能远远高于内存大小，[详情请见"备份和存储"](documents/persistence_cn.md)。
+需要注意的是：RedRock仍采用Redis的备份存储方式，即AOF/RDB。但里面有很多细节需要注意，毕竟现在的记录集很可能远远高于内存大小，[详情请见"备份和存储"](persistence_cn.md)。
 
 RedRock具有如下的一些特点：
 * 不启动新特性下，代码执行和Redis源代码一模一样
