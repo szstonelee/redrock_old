@@ -21,13 +21,15 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 ## Key Design
 
-RedRock stores all Redis keys in memory. If memory is not enough for holding all key/values, RedRock will save some values to disk and later retrive the values from the disk if client requests need it. Usually the size of value is bigger than key. So if value is 100 times than key, the dataset can be 100 times than the limit of memory. If more key/value are coming over the 100 times limit, RedRock will evict some keys by LRU/LFU.
+**RedRock stores all Redis keys in memory, and can store ONLY the keys.**
 
-For the performance, if most visits key/value in memory, it is as the same as Redis, usually hundreds K qps with 99% latnecy of 1ms. If more visits to the keys which values are stored in disk, the performance can degreade. You can check [the benchmark for different pattern](documents/perfornamce_en.md).
+If memory is not enough for holding all key/values, RedRock will save some values to disk and later retrieve the values from the disk if clients  need them. Usually the size of value is bigger than key. If value size is 100 times than key, the dataset can be 100 times than the limit of memory. If more key/values are coming over the 100 times limit, RedRock will evict some keys totally by LRU/LFU.
 
-So the good user case for RedRock is hot key/value in memory with a large warm/cold dataset in disk. This way, we achieve the performance similar to Redis and huge dataset like traditional DB.
+For the performance, if most requests visit key/value in memory, RedRock is same as Redis, usually hundreds kilo qps with 99% latnecy of sub 1ms for one machine. If more visits are coming to the keys which values are in disk, the performance can degrade rapidlly. You can check [the benchmark for different patterns](documents/perfornamce_en.md).
 
-RedRock uses the Redis persistent ways like AOF/RDB. But for the dataset would be so big, [you need some advice for the persistency](documents/persistence_en.md).
+So the best user case for RedRock is hot key/value fitting in memory with a huge warm/cold values in disk. This way, we achieve the performance of latency similar to Redis and much-over-meomroy-limit-size dataset like traditional DB.
+
+RedRock uses the Redis persistent ways like AOF/RDB. Because the dataset would be much bigger than memory, [you need some advice for the persistency](documents/persistence_en.md).
 
 ## RedRock Features
 * Pure Redis. When no enable disk, RedRock is running almost the same codes as Redis
