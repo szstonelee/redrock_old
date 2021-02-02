@@ -3,7 +3,7 @@
 # RedRock Homepage
 
 ## Introduction
-RedRock is a combination of [Redis](https://github.com/antirez/redis) and [Rocksdb](https://rocksdb.org/).
+RedRock is a combination of [Redis](https://github.com/antirez/redis) and [RocksDB](https://rocksdb.org/).
 
 ## Why
 Redis is a wonderful NoSQL based on memory. But memory costs more than disk. We hope something,

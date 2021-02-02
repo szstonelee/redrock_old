@@ -2,7 +2,7 @@
 
 # 简介
 
-RedRock，简而言之，就是 Redis + Rocksdb。
+RedRock，简而言之，就是 Redis + RocksDB。
 
 Redis是个内存性的NOSQL，但内存比较贵，我们希望：
 * 有Redis的基于内存的快速
