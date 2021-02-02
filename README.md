@@ -25,9 +25,9 @@ Wish you use it more and leave feedbacks at Github. Thank you.
 
 If memory is not enough for holding all key/values, RedRock will save some values to disk and later retrieve the values from the disk if clients  need them. Usually the size of value is bigger than key. If value size is 100 times than key, the dataset can be 100 times than the limit of memory. If more key/values are coming over the 100 times limit, RedRock will evict some keys totally by LRU/LFU.
 
-For the performance, if most requests visit key/value in memory, RedRock is same as Redis, usually hundreds kilo qps with 99% latnecy of sub 1ms for one machine. If more visits are coming to the keys which values are in disk, the performance can degrade rapidlly. You can check [the benchmark for different patterns](documents/perfornamce_en.md).
+For the performance, if most requests visit key/value in memory, RedRock is same as Redis, usually hundreds kilo qps with 99% latnecy of sub 1ms for one machine. If more visits are coming to the keys which values are in disk, the performance can degrade rapidlly. You can check [the benchmark for different patterns](documents/performance_en.md).
 
-So the best user case for RedRock is hot key/value fitting in memory with a huge warm/cold values in disk. This way, we achieve the performance of latency similar to Redis and much-over-meomroy-limit-size dataset like traditional DB.
+So the best user case for RedRock is hot key/value fitting in memory with a huge warm/cold values in disk. This way, we achieve the performance of latency similar to Redis and much-over-meomroy-size-limit dataset like traditional DB.
 
 RedRock uses the Redis persistent ways like AOF/RDB. Because the dataset would be much bigger than memory, [you need some advice for the persistency](documents/persistence_en.md).
 
