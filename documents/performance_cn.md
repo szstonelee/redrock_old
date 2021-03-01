@@ -116,8 +116,8 @@ java -Xmx9000000000 -jar target/metric-1.0.jar mode1 6 3000
 | 1 | 10k | 0.29 |
 | 2 | 17k | 0.33 |
 | 3 | 22k | 0.36 |
-| 3 | 23k | 0.51 |
-| 3 | 22k | 0.66 |
+| 4 | 23k | 0.51 |
+| 5 | 22k | 0.66 |
 ```
 java -Xmx9000000000 -jar target/metric-1.0.jar mode1 1 2500
 java -Xmx9000000000 -jar target/metric-1.0.jar mode1 2 2500
