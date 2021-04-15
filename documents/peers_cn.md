@@ -14,7 +14,8 @@
 * [SSDB with LevelDB](http://ssdb.io/)
 * [SSSB with Rocksdb](https://github.com/ideawu/ssdb-rocks)
 * [Tencent Tendis](https://github.com/Tencent/Tendis)
-* [QDB]((https://github.com/reborndb/qdb)
+* [QDB](https://github.com/reborndb/qdb)
+* [LedisDB](https://github.com/ledisdb/ledisdb)
 
 ## Memcached
 
