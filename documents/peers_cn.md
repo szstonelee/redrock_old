@@ -16,6 +16,7 @@
 * [Tencent Tendis](https://github.com/Tencent/Tendis)
 * [QDB](https://github.com/reborndb/qdb)
 * [LedisDB](https://github.com/ledisdb/ledisdb)
+* [Tedis](https://github.com/yongman/tidis)
 
 ## Memcached
 
