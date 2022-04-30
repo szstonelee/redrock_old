@@ -1,6 +1,6 @@
 [中文帮助请点这里, click here for Chinese documents](documents/menu_cn.md) 
 
-# RedRock Homepage
+# RedRock_old (depreciated) Homepage
 
 ## Introduction
 RedRock is a combination of [Redis](https://github.com/antirez/redis) and [RocksDB](https://rocksdb.org/).
